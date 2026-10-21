@@ -1,0 +1,154 @@
+@import "tailwindcss";
+@import "@fontsource-variable/nunito";
+
+/* Тёмная тема включается классом на <html> (режимы: вручную/система/расписание) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #faf6f0;
+  --foreground: #3b342e;
+  --card: #fffdf9;
+  --popover: #fffdf9;
+  --primary: #e8a87c; /* персик */
+  --primary-foreground: #43301f;
+  --secondary: #a9bca1; /* шалфей */
+  --secondary-foreground: #2e3828;
+  --muted: #f1eae0;
+  --muted-foreground: #8b8074;
+  --accent: #f4ede2;
+  --accent-foreground: #3b342e;
+  --destructive: #c96f5e;
+  --border: #e9e0d2;
+  --input: #e9e0d2;
+  --ring: #e8a87c;
+  --success: #7fa76b;
+  --warning: #e0a458;
+  --info: #9c8fc7;
+  --sleep: #7fa76b;
+  --food: #e0a458;
+  --ai: #9c8fc7;
+  --radius: 1rem;
+}
+
+.dark {
+  --background: #17140f;
+  --foreground: #ede6db;
+  --card: #201b15;
+  --popover: #262019;
+  --primary: #a78bfa; /* фиолетовый — навигация/акцент */
+  --primary-foreground: #17140f;
+  --secondary: #2c261e;
+  --secondary-foreground: #ede6db;
+  --muted: #241f18;
+  --muted-foreground: #a69a8c;
+  --accent: #2a241c;
+  --accent-foreground: #ede6db;
+  --destructive: #d97064;
+  --border: #2e2820;
+  --input: #2e2820;
+  --ring: #a78bfa;
+  --success: #6fbf8f;
+  --warning: #e89b5b;
+  --info: #a78bfa;
+  --sleep: #6fbf8f;
+  --food: #e89b5b;
+  --ai: #a78bfa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-sleep: var(--sleep);
+  --color-food: var(--food);
+  --color-ai: var(--ai);
+  --font-sans: "Nunito Variable", ui-sans-serif, system-ui, sans-serif;
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.5rem);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    overscroll-behavior-y: none;
+  }
+  /* safe-area для PWA на iOS */
+  #root {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Амбиентная подсветка (рецепт z.ai): полупрозрачная подложка + hairline + рассеянная тень.
+   Светлая тема — нейтральный оттенок тени; тёмная — семантический цвет роли элемента. */
+.ambient {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+.dark .ambient {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.ambient-sleep {
+  --ambient-rest: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --ambient-peak: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+.dark .ambient-sleep {
+  --ambient-rest: 0 4px 20px rgba(111, 191, 143, 0.12);
+  --ambient-peak: 0 6px 30px rgba(111, 191, 143, 0.22);
+}
+
+.ambient-food {
+  --ambient-rest: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --ambient-peak: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+.dark .ambient-food {
+  --ambient-rest: 0 4px 20px rgba(232, 155, 91, 0.12);
+  --ambient-peak: 0 6px 30px rgba(232, 155, 91, 0.22);
+}
+
+/* «Дыхание» карточки сна: медленная пульсация ореола, ~6 с цикл */
+.breathing {
+  animation: ambient-breathe 6s ease-in-out infinite;
+}
+@keyframes ambient-breathe {
+  0%,
+  100% {
+    box-shadow: var(--ambient-rest);
+  }
+  50% {
+    box-shadow: var(--ambient-peak);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breathing {
+    animation: none;
+    box-shadow: var(--ambient-rest);
+  }
+}
+
+/* Плавное переключение темы: класс вешается на <html> на время перехода */
+.theme-anim,
+.theme-anim *,
+.theme-anim *::before,
+.theme-anim *::after {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
