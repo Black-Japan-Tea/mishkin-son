@@ -7,3 +7,7 @@ coverage/
 *.local
 .DS_Store
 .playwright-mcp/
+.vercel
+
+.vercel
+.env*
