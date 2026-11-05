@@ -133,8 +133,10 @@ function MeasurementsSection({
             { value: "head", label: "Голова" },
           ]}
         />
-        <div className="flex items-end gap-2">
-          <div className="flex flex-1 flex-col gap-1">
+        {/* Узкие экраны (<360): значение, дата и «+» стеком — иначе нативная дата
+            выдавливает поле значения до ширины в несколько пикселей */}
+        <div className="flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-end">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <Label htmlFor="ms-value">{TYPE_LABEL[type]}</Label>
             <Input
               id="ms-value"
@@ -144,7 +146,7 @@ function MeasurementsSection({
               placeholder="8.5"
             />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex min-w-0 flex-col gap-1">
             <Label htmlFor="ms-date">Дата</Label>
             <Input id="ms-date" type="date" value={dateKey} onChange={(e) => setDateKey(e.target.value)} />
           </div>

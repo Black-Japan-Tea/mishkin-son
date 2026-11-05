@@ -80,7 +80,9 @@ export function ChildForm({ familyId, initial, onSaved }: ChildFormProps): React
           ]}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      {/* Одноколоночная сетка: длинные метки («Вес при рождении, г») переносятся по-разному
+          в двух колонках, и инпуты встают не по одной линии — стек держит их ровно на любой ширине */}
+      <div className="grid grid-cols-1 gap-3">
         <div className="flex flex-col gap-1">
           <Label htmlFor="ch-weight">Вес при рождении, г</Label>
           <Input id="ch-weight" inputMode="numeric" value={weightG} onChange={(e) => setWeightG(e.target.value)} placeholder="3400" />

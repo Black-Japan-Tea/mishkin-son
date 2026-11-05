@@ -23,6 +23,16 @@ const ACCENT_CLASS: Record<NonNullable<SegmentedProps<string>["accent"]>, string
   destructive: "bg-destructive text-white",
 };
 
+/**
+ * Базис сегмента по числу опций: перенос строк перестаёт зависеть от ширины текста.
+ * 2–3 опции — всегда один ровный ряд; 4+ — ровная сетка по 2 в ряд.
+ * Без этого на 320px «Подгузник» из 4-опционного набора уезжал на вторую строку растянутым.
+ */
+const ITEM_BASIS: Record<number, string> = {
+  2: "basis-[calc(50%-0.25rem)]",
+  3: "basis-[calc(33.333%-5.33px)]",
+};
+
 /** Сегментированный выбор (вместо select — крупнее и удобнее одной рукой). */
 export function Segmented<T extends string>({
   options,
@@ -31,6 +41,7 @@ export function Segmented<T extends string>({
   className,
   accent = "primary",
 }: SegmentedProps<T>) {
+  const basis = ITEM_BASIS[options.length] ?? "basis-[calc(50%-0.25rem)]";
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {options.map((o) => (
@@ -39,7 +50,8 @@ export function Segmented<T extends string>({
           type="button"
           onClick={() => onChange(o.value)}
           className={cn(
-            "flex-1 whitespace-nowrap rounded-lg border border-border px-3 py-2.5 text-sm font-semibold transition-colors",
+            "min-w-0 flex-1 whitespace-nowrap rounded-lg border border-border px-3 py-2.5 text-sm font-semibold transition-colors",
+            basis,
             value === o.value
               ? ACCENT_CLASS[accent]
               : "bg-card text-foreground hover:bg-accent",

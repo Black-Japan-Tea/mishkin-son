@@ -20,6 +20,8 @@ export function SheetContent({
       <DialogPrimitive.Content
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-2xl border-t border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg outline-none",
+          // Шит не выше вьюпорта: длинный контент скроллится внутри, а не уходит за верх экрана
+          "max-h-[100dvh] overflow-y-auto overscroll-contain",
           className,
         )}
         {...props}
@@ -49,6 +51,9 @@ export function DialogContent({
       <DialogPrimitive.Content
         className={cn(
           "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-4 shadow-lg outline-none",
+          // Диалог не выше вьюпорта (низкие экраны ~568px): контент скроллится внутри,
+          // нижние кнопки («Сохранить»/«Удалить событие») всегда достижимы
+          "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
           className,
         )}
         {...props}
