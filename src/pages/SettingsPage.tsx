@@ -11,6 +11,7 @@ import { useSettings } from "../stores/settings";
 import { useSyncStatus } from "../sync/status";
 import { refreshPendingCount, syncNow } from "../sync/engine";
 import { exportJson } from "../lib/export";
+import { clearLog, exportLog } from "../lib/logger";
 
 const THEME_OPTIONS = [
   { value: "light", label: "Светлая" },
@@ -18,6 +19,17 @@ const THEME_OPTIONS = [
   { value: "system", label: "Системная" },
   { value: "schedule", label: "По часам" },
 ] as const;
+
+/** Скачивание журнала: тот же механизм, что у экспорта данных (lib/export.ts). */
+function downloadLog(json: string): void {
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `mishkin-log-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 /** Настройки: тема, семья, синк, экспорт, аккаунт (план §7.5). */
 export function SettingsPage(): React.JSX.Element {
@@ -129,6 +141,27 @@ export function SettingsPage(): React.JSX.Element {
         <CardContent>
           <Button variant="outline" className="w-full" onClick={() => void exportJson()}>
             Экспортировать JSON
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="ambient">
+        <CardHeader>
+          <CardTitle>Журнал приложения</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 text-sm">
+          <p className="text-muted-foreground">
+            Последние 200 событий приложения; без личных данных.
+          </p>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => void exportLog().then(downloadLog)}
+          >
+            Экспорт журнала
+          </Button>
+          <Button variant="outline" className="w-full" onClick={() => void clearLog()}>
+            Очистить журнал
           </Button>
         </CardContent>
       </Card>

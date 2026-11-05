@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { fetchSettings } from "../lib/remote";
+import { logWarn } from "../lib/logger";
 import { hhmmToMinutes } from "../lib/time";
 import { getMeta, setMeta } from "../repo/meta";
 import { useAuth } from "./auth";
@@ -48,7 +49,7 @@ async function queueCloudPatch(patch: {
     // Движок слушает это событие и запускает синк (пуш настроек идёт после аутбокса — FK безопасно).
     window.dispatchEvent(new Event("mishkin:sync"));
   } catch (e) {
-    console.warn("Не удалось поставить настройки в очередь облака:", e);
+    logWarn("settings", "Не удалось поставить настройки в очередь облака", { error: e });
   }
 }
 
@@ -60,7 +61,7 @@ export const useSettings = create<SettingsState>()((set, get) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
-      console.warn("Не удалось сохранить настройки темы локально:", e);
+      logWarn("settings", "Не удалось сохранить настройки темы локально", { error: e });
     }
   }
 
@@ -122,7 +123,7 @@ function readLocal(): PersistedTheme | null {
       scheduleEnd: typeof p.scheduleEnd === "string" ? p.scheduleEnd : "07:00",
     };
   } catch (e) {
-    console.warn("Не удалось прочитать локальные настройки темы:", e);
+    logWarn("settings", "Не удалось прочитать локальные настройки темы", { error: e });
     return null;
   }
 }

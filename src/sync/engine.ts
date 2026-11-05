@@ -1,5 +1,6 @@
 import { getDb } from "../lib/db";
 import { isSupabaseConfigured } from "../lib/env";
+import { logWarn } from "../lib/logger";
 import {
   pullChildren,
   pullEvents,
@@ -75,7 +76,7 @@ async function flushPendingSettings(): Promise<void> {
   try {
     parsed = JSON.parse(raw) as Record<string, unknown>;
   } catch (e) {
-    console.warn("Не удалось разобрать отложенные настройки:", e);
+    logWarn("sync", "Не удалось разобрать отложенные настройки", { error: e });
     await deleteMeta(PENDING_SETTINGS_KEY);
     return;
   }
@@ -101,7 +102,7 @@ async function flushPendingSettings(): Promise<void> {
     await deleteMeta(PENDING_SETTINGS_KEY);
   } catch (e) {
     // Оставляем в мете — уйдёт при следующем синке.
-    console.warn("Настройки не запушены, отложены на следующий синк:", e);
+    logWarn("sync", "Настройки не запушены, отложены на следующий синк", { error: e });
   }
 }
 
