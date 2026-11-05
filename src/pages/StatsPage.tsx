@@ -83,7 +83,7 @@ export function StatsPage(): React.JSX.Element {
       </Card>
 
       <p className="text-center text-xs text-muted-foreground">
-        Ночной сон учитывается в день засыпания. Полосы — норма для возраста, не медицинская оценка.
+        Ночной сон учитывается в день засыпания. Полосы — норма для возраста согласно ВОЗ, не медицинская оценка.
       </p>
     </div>
   );

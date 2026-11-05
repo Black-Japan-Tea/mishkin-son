@@ -6,9 +6,9 @@ import { useChildren } from "../../stores/children";
 import { useSyncStatus } from "../../sync/status";
 
 const TABS = [
-  { to: "/", label: "Главная", icon: House },
-  { to: "/history", label: "История", icon: CalendarDays },
   { to: "/stats", label: "Статистика", icon: BarChart3 },
+  { to: "/history", label: "История", icon: CalendarDays },
+  { to: "/", label: "Главная", icon: House },
   { to: "/tips", label: "Советы", icon: Sparkles },
   { to: "/child", label: "Профиль", icon: Baby },
 ] as const;

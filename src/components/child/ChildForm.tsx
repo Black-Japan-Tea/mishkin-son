@@ -15,7 +15,8 @@ interface ChildFormProps {
 export function ChildForm({ familyId, initial, onSaved }: ChildFormProps): React.JSX.Element {
   const [name, setName] = useState(initial?.name ?? "");
   const [birthDate, setBirthDate] = useState(initial?.birthDate ?? "");
-  const [sex, setSex] = useState<ChildSex | "unknown">(initial?.sex ?? "unknown");
+  // null = «не выбрано»: Segmented поддерживает это контрактом value: T | null
+  const [sex, setSex] = useState<ChildSex | null>(initial?.sex ?? null);
   const [weightG, setWeightG] = useState(initial?.birthWeightG !== null && initial?.birthWeightG !== undefined ? String(initial.birthWeightG) : "");
   const [heightCm, setHeightCm] = useState(initial?.birthHeightCm !== null && initial?.birthHeightCm !== undefined ? String(initial.birthHeightCm) : "");
   const [error, setError] = useState<string | null>(null);
@@ -31,12 +32,17 @@ export function ChildForm({ familyId, initial, onSaved }: ChildFormProps): React
       setError("Укажи дату рождения");
       return;
     }
+    // Пол обязателен только при добавлении: при редактировании сохраняем null как есть
+    if (initial === undefined && sex === null) {
+      setError("Укажи пол малыша");
+      return;
+    }
     setSaving(true);
     try {
       const patch = {
         name: name.trim(),
         birthDate,
-        sex: sex === "unknown" ? null : sex,
+        sex,
         birthWeightG: weightG === "" ? null : Number.parseInt(weightG, 10),
         birthHeightCm: heightCm === "" ? null : Number.parseFloat(heightCm.replace(",", ".")),
       };
@@ -71,7 +77,6 @@ export function ChildForm({ familyId, initial, onSaved }: ChildFormProps): React
           options={[
             { value: "male", label: "Мальчик" },
             { value: "female", label: "Девочка" },
-            { value: "unknown", label: "Пока скрыть" },
           ]}
         />
       </div>

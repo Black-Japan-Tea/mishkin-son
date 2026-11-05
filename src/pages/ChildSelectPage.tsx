@@ -23,7 +23,7 @@ export function ChildSelectPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-3 p-4">
-      <h1 className="text-center text-xl font-extrabold">Кто у нас сегодня?</h1>
+      <h1 className="text-center text-xl font-extrabold">Выбери малыша</h1>
       {children.map((child) => (
         <Card
           key={child.id}
