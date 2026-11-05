@@ -28,8 +28,24 @@ export default defineConfig({
         ],
       },
       workbox: {
-        navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,svg,woff2}"],
+        // HTML в прекэш не кладём и navigateFallback отключаем (у плагина дефолт
+        // "index.html"; undefined перебивает его при Object.assign-мерже): оба пути
+        // отдают устаревший index.html после нового деплоя — источник белого экрана.
+        // Навигации вместо этого идут network-first: свежая страница с сервера,
+        // офлайн — последний закэшированный ответ из runtime-кэша.
+        navigateFallback: undefined,
+        globPatterns: ["**/*.{js,css,svg,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "navigations",
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 16, purgeOnQuotaError: true },
+            },
+          },
+        ],
       },
     }),
   ],

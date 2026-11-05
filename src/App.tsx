@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Bootstrap } from "./components/Bootstrap";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -58,31 +59,34 @@ function App(): React.JSX.Element {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <BrowserRouter>
-          <Bootstrap />
-          <Routes>
-            <Route path="/config" element={<ConfigRequiredPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+          {/* boundary внутри ThemeProvider: fallback-карточка получает токены темы */}
+          <ErrorBoundary>
+            <Bootstrap />
+            <Routes>
+              <Route path="/config" element={<ConfigRequiredPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            <Route element={<AuthGate />}>
-              <Route path="/family" element={<FamilyPage />} />
-              <Route element={<FamilyGate />}>
-                <Route path="/children" element={<ChildSelectPage />} />
-                <Route element={<ChildGate />}>
-                  <Route element={<AppLayout />}>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/history" element={<HistoryPage />} />
-                    <Route path="/stats" element={<StatsPage />} />
-                    <Route path="/tips" element={<TipsPage />} />
-                    <Route path="/child" element={<ChildProfilePage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
+              <Route element={<AuthGate />}>
+                <Route path="/family" element={<FamilyPage />} />
+                <Route element={<FamilyGate />}>
+                  <Route path="/children" element={<ChildSelectPage />} />
+                  <Route element={<ChildGate />}>
+                    <Route element={<AppLayout />}>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/history" element={<HistoryPage />} />
+                      <Route path="/stats" element={<StatsPage />} />
+                      <Route path="/tips" element={<TipsPage />} />
+                      <Route path="/child" element={<ChildProfilePage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                    </Route>
                   </Route>
                 </Route>
               </Route>
-            </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ErrorBoundary>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
