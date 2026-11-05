@@ -15,15 +15,6 @@ export function useActiveSleep(childId: string | null) {
   });
 }
 
-export function useActiveBreast(childId: string | null) {
-  return useQuery({
-    queryKey: ["events", "activeBreast", childId],
-    queryFn: async () =>
-      childId === null ? null : ((await eventsRepo.getActiveBreastFeed(childId)) ?? null),
-    enabled: childId !== null,
-  });
-}
-
 export function useDayEvents(childId: string | null, dayKey: string) {
   return useQuery({
     queryKey: ["events", "day", childId, dayKey],

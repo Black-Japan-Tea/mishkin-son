@@ -29,10 +29,16 @@ export function EventForm({ childId, familyId, userId, initial, onSaved }: Event
     dayTag: init !== null && init.type === "sleep" ? init.details.dayTag : "day",
     place: init !== null && init.type === "sleep" ? (init.details.place ?? "") : "",
     note: init !== null && (init.type === "sleep" || init.type === "feed_solid") ? (init.details.note ?? "") : "",
-    side: init !== null && init.type === "feed_breast" ? init.details.side : "left",
     ml: init !== null && init.type === "feed_bottle" ? String(init.details.volumeMl) : "",
-    kind: init !== null && init.type === "feed_bottle" ? (init.details.kind ?? "formula") : "formula",
+    // Легаси-строка kind (напр. "milk") в форму не попадает — предлагаем ближайший актуальный вид.
+    kind:
+      init !== null && init.type === "feed_bottle" && init.details.kind === "water" ? "water" : "formula",
     food: init !== null && init.type === "feed_solid" ? (init.details.food ?? "") : "",
+    amount:
+      init !== null && init.type === "feed_solid" && init.details.amount !== undefined
+        ? String(init.details.amount)
+        : "",
+    unit: init !== null && init.type === "feed_solid" ? (init.details.unit ?? "g") : "g",
     waterMl:
       init !== null && init.type === "feed_water" && init.details.volumeMl !== undefined
         ? String(init.details.volumeMl)

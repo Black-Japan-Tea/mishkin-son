@@ -9,8 +9,6 @@ export function eventIcon(e: AppEvent): React.JSX.Element {
   switch (e.type) {
     case "sleep":
       return e.details.dayTag === "night" ? <Moon className={cn(cls, "text-sleep")} /> : <Sun className={cn(cls, "text-sleep")} />;
-    case "feed_breast":
-      return <Baby className={cn(cls, "text-food")} />;
     case "feed_bottle":
       return <Milk className={cn(cls, "text-food")} />;
     case "feed_solid":
@@ -19,38 +17,68 @@ export function eventIcon(e: AppEvent): React.JSX.Element {
       return <Droplets className={cn(cls, "text-info")} />;
     case "diaper":
       return <Baby className={cn(cls, "text-info")} />;
+    default:
+      // Легаси-типы из старых локальных БД не должны ронять ленту (D2).
+      return <Baby className={cn(cls, "text-info")} />;
   }
 }
+
+/** Виды бутылочки; "milk" — легаси из старых строк БД, отображаем, но новым не пишем (D2). */
+const BOTTLE_KIND_LABELS: Record<string, string> = {
+  formula: "смеси",
+  water: "воды",
+  milk: "сцеженного",
+};
 
 export function eventTitle(e: AppEvent): string {
   switch (e.type) {
     case "sleep":
       return e.details.dayTag === "night" ? "Ночной сон" : "Дневной сон";
-    case "feed_breast":
-      return `Грудь: ${sideLabel(e.details.side)}`;
-    case "feed_bottle":
-      return `Бутылочка: ${e.details.volumeMl} мл${e.details.kind === "milk" ? " (сцеженное)" : ""}`;
-    case "feed_solid":
-      return e.details.food !== undefined && e.details.food !== "" ? `Прикорм: ${e.details.food}` : "Прикорм";
+    case "feed_bottle": {
+      const kindLabel = BOTTLE_KIND_LABELS[e.details.kind ?? ""] ?? undefined;
+      return kindLabel === undefined
+        ? `Бутылочка: ${e.details.volumeMl} мл`
+        : `Бутылочка: ${e.details.volumeMl} мл ${kindLabel}`;
+    }
+    case "feed_solid": {
+      // Прикорм — два независимых поля (что ел + сколько), заголовок собирает их через запятую.
+      const parts: string[] = [];
+      if (e.details.food !== undefined && e.details.food !== "") parts.push(e.details.food);
+      if (e.details.amount !== undefined) {
+        parts.push(`${e.details.amount} ${e.details.unit === "ml" ? "мл" : "г"}`);
+      }
+      return parts.length > 0 ? `Прикорм: ${parts.join(", ")}` : "Прикорм";
+    }
     case "feed_water":
       return e.details.volumeMl !== undefined ? `Вода: ${e.details.volumeMl} мл` : "Вода";
     case "diaper":
-      return e.details.kind === "pee" ? "Подгузник: попис" : e.details.kind === "poop" ? "Подгузник: кака" : "Подгузник";
+      // "both" — легаси-значение из БД: нейтральный заголовок вместо падения.
+      return e.details.kind === "pee" ? "Подгузник: пописал" : e.details.kind === "poop" ? "Подгузник: покакал" : "Подгузник";
+    default:
+      // Легаси-тип вне актуального EventType — нейтральный заголовок вместо undefined в UI.
+      return "Событие";
   }
-}
-
-function sideLabel(side: "left" | "right" | "both"): string {
-  return side === "left" ? "лево" : side === "right" ? "право" : "обе";
 }
 
 export function eventSubtitle(e: AppEvent): string {
   const parts: string[] = [];
-  if (e.endedAt !== null) {
-    const dur = new Date(e.endedAt).getTime() - new Date(e.startedAt).getTime();
-    if (dur > 60_000) parts.push(formatDuration(dur));
-    parts.push(`${formatClock(e.startedAt)} → ${formatClock(e.endedAt)}`);
+  if (e.type === "sleep") {
+    // Сон — интервал: длительность + диапазон, активный — «с HH:MM · идёт».
+    if (e.endedAt !== null) {
+      const dur = new Date(e.endedAt).getTime() - new Date(e.startedAt).getTime();
+      if (dur > 60_000) parts.push(formatDuration(dur));
+      parts.push(`${formatClock(e.startedAt)} → ${formatClock(e.endedAt)}`);
+    } else {
+      parts.push(`с ${formatClock(e.startedAt)} · идёт`);
+    }
   } else {
-    parts.push(`с ${formatClock(e.startedAt)} · идёт`);
+    // Мгновенные события пишутся одним временем (startedAt === endedAt);
+    // диапазон показываем только при правке задним числом.
+    if (e.endedAt !== null && e.endedAt !== e.startedAt) {
+      parts.push(`${formatClock(e.startedAt)} → ${formatClock(e.endedAt)}`);
+    } else {
+      parts.push(formatClock(e.startedAt));
+    }
   }
   if (e.type === "sleep" && e.details.place !== undefined) parts.push(e.details.place);
   if (e.type === "sleep" && e.details.note !== undefined) parts.push(e.details.note);

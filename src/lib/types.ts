@@ -1,38 +1,38 @@
 export type EventType =
   | "sleep"
-  | "feed_breast"
   | "feed_bottle"
   | "feed_solid"
   | "feed_water"
   | "diaper";
 
 export type DayTag = "day" | "night";
-export type BreastSide = "left" | "right" | "both";
-export type BottleKind = "milk" | "formula";
+/** Вид бутылочки для новых записей; грудь убрана из проекта (D1). */
+export type BottleKind = "formula" | "water";
+/** Единица количества прикорма (второе поле прикорма, D-прикорм). */
+export type SolidUnit = "g" | "ml";
 export type DiaperKind = "pee" | "poop" | "both";
 export type ChildSex = "male" | "female";
 export type MeasurementType = "weight" | "height" | "head";
 export type ThemeMode = "light" | "dark" | "system" | "schedule";
 
-/** Ночные кормления минимализны (Q22): факт + время + объём/сторона. */
+/** Ночные кормления минимализны (Q22): факт + время + объём. */
 export interface SleepDetails {
   dayTag: DayTag;
   place?: string;
   note?: string;
 }
 
-export interface BreastDetails {
-  side: BreastSide;
-  durationMin?: number;
-}
-
 export interface BottleDetails {
   volumeMl: number;
-  kind?: BottleKind;
+  /** Для новых записей — BottleKind; старые строки БД могут нести легаси-строку (напр. "milk"), поэтому читаем как строку без валидации юнионом (D2). */
+  kind?: string;
 }
 
 export interface SolidDetails {
   food?: string;
+  /** Сколько съел; единица — unit, поле только у прикорма. */
+  amount?: number;
+  unit?: SolidUnit;
   note?: string;
 }
 
@@ -46,7 +46,6 @@ export interface DiaperDetails {
 
 export type EventDetails =
   | SleepDetails
-  | BreastDetails
   | BottleDetails
   | SolidDetails
   | WaterDetails
@@ -57,7 +56,7 @@ interface EventBase {
   childId: string;
   familyId: string;
   createdBy: string;
-  /** ISO UTC. endedAt = null у активного сна/кормления. */
+  /** ISO UTC. endedAt = null только у активного сна (таймер груди убран, D1). */
   startedAt: string;
   endedAt: string | null;
   /** Ночное кормление внутри сна (решение Q21). */
@@ -70,10 +69,6 @@ interface EventBase {
 export interface SleepEvent extends EventBase {
   type: "sleep";
   details: SleepDetails;
-}
-export interface BreastEvent extends EventBase {
-  type: "feed_breast";
-  details: BreastDetails;
 }
 export interface BottleEvent extends EventBase {
   type: "feed_bottle";
@@ -94,7 +89,6 @@ export interface DiaperEvent extends EventBase {
 
 export type AppEvent =
   | SleepEvent
-  | BreastEvent
   | BottleEvent
   | SolidEvent
   | WaterEvent

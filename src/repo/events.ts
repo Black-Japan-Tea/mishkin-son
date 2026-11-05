@@ -1,7 +1,7 @@
 import { getDb } from "../lib/db";
 import { dayKeyOf } from "../lib/time";
 import { newId, nowIso } from "../lib/utils";
-import type { AppEvent, BreastEvent, EventType, SleepEvent } from "../lib/types";
+import type { AppEvent, EventType, SleepEvent } from "../lib/types";
 
 type AppEventOfType<T extends EventType> = Extract<AppEvent, { type: T }>;
 
@@ -91,13 +91,6 @@ export async function getActiveSleep(childId: string): Promise<SleepEvent | unde
   const events = await getEventsForChild(childId);
   return events.find(
     (e): e is SleepEvent => e.type === "sleep" && e.endedAt === null,
-  );
-}
-
-export async function getActiveBreastFeed(childId: string): Promise<BreastEvent | undefined> {
-  const events = await getEventsForChild(childId);
-  return events.find(
-    (e): e is BreastEvent => e.type === "feed_breast" && e.endedAt === null,
   );
 }
 

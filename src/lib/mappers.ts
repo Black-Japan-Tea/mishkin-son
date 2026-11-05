@@ -1,6 +1,5 @@
 import {
   parseBottleDetails,
-  parseBreastDetails,
   parseDiaperDetails,
   parseSleepDetails,
   parseSolidDetails,
@@ -29,8 +28,6 @@ export function toDomainEvent(row: DbEventRow): AppEvent {
   switch (row.type) {
     case "sleep":
       return { ...base, type: "sleep", details: parseSleepDetails(row.details) };
-    case "feed_breast":
-      return { ...base, type: "feed_breast", details: parseBreastDetails(row.details) };
     case "feed_bottle":
       return { ...base, type: "feed_bottle", details: parseBottleDetails(row.details) };
     case "feed_solid":
@@ -40,6 +37,8 @@ export function toDomainEvent(row: DbEventRow): AppEvent {
     case "diaper":
       return { ...base, type: "diaper", details: parseDiaperDetails(row.details) };
     default: {
+      // Легаси-типы (напр. грудь) в базу больше не пишутся и история чистится отдельным треком;
+      // неизвестный тип — контрактная ошибка, её не маскируем.
       const never: never = row.type;
       throw new Error(`Неизвестный тип события: ${String(never)}`);
     }

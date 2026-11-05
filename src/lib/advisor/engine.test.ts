@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { generateTips } from "./engine";
-import { medianWakeWindowMin, sleepMsOnDay } from "./patterns";
+import { feedStatsOnDay, medianWakeWindowMin, sleepMsOnDay } from "./patterns";
 import { formatClock } from "../time";
-import type { AppEvent, Child } from "../types";
+import type { AppEvent, BottleDetails, Child, SolidDetails, WaterDetails } from "../types";
 
 const CHILD: Child = {
   id: "c1",
@@ -35,6 +35,19 @@ function sleep(id: string, startIso: string, endIso: string, dayTag: "day" | "ni
   };
 }
 
+/** Мгновенное событие кормления: startedAt === endedAt (время одним значением). */
+function bottleFeed(id: string, startIso: string, details: BottleDetails): AppEvent {
+  return { id, childId: "c1", familyId: "f1", createdBy: "u1", type: "feed_bottle", startedAt: startIso, endedAt: startIso, parentEventId: null, createdAt: startIso, updatedAt: startIso, deletedAt: null, details };
+}
+
+function solidFeed(id: string, startIso: string, details: SolidDetails): AppEvent {
+  return { id, childId: "c1", familyId: "f1", createdBy: "u1", type: "feed_solid", startedAt: startIso, endedAt: startIso, parentEventId: null, createdAt: startIso, updatedAt: startIso, deletedAt: null, details };
+}
+
+function waterFeed(id: string, startIso: string, details: WaterDetails): AppEvent {
+  return { id, childId: "c1", familyId: "f1", createdBy: "u1", type: "feed_water", startedAt: startIso, endedAt: startIso, parentEventId: null, createdAt: startIso, updatedAt: startIso, deletedAt: null, details };
+}
+
 describe("patterns", () => {
   it("считает сон за день по дню засыпания", () => {
     const events = [
@@ -52,6 +65,17 @@ describe("patterns", () => {
       sleep("c", "2026-10-19T17:00:00Z", "2026-10-19T18:00:00Z", "day"), // окно 180 мин
     ];
     expect(medianWakeWindowMin(events)).toBe(180);
+  });
+
+  it("считает кормления по бутылочке и прикорму, вода — только в мл", () => {
+    const events = [
+      bottleFeed("f1", "2026-10-20T08:00:00Z", { volumeMl: 120, kind: "formula" }),
+      solidFeed("f2", "2026-10-20T11:00:00Z", { food: "Кабачок", amount: 80, unit: "g" }),
+      waterFeed("f3", "2026-10-20T12:00:00Z", { volumeMl: 30 }),
+      // Вчерашняя бутылочка не попадает в счёт сегодняшнего дня.
+      bottleFeed("f4", "2026-10-19T18:00:00Z", { volumeMl: 999, kind: "water" }),
+    ];
+    expect(feedStatsOnDay(events, "2026-10-20")).toEqual({ count: 2, ml: 150 });
   });
 });
 

@@ -42,9 +42,8 @@ export function DiaperSheet({
           value={kind}
           onChange={setKind}
           options={[
-            { value: "pee", label: "Попис" },
-            { value: "poop", label: "Кака" },
-            { value: "both", label: "И то и то" },
+            { value: "pee", label: "Пописал" },
+            { value: "poop", label: "Покакал" },
           ]}
         />
         <Button className="mt-4 w-full" onClick={record}>

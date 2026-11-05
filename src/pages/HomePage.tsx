@@ -4,7 +4,6 @@ import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { SleepCard } from "../components/sleep/SleepCard";
 import { SleepStartSheet } from "../components/sleep/SleepStartSheet";
-import { ActiveBreastCard } from "../components/feed/ActiveBreastCard";
 import { FoodSheet } from "../components/feed/FoodSheet";
 import { DiaperSheet } from "../components/diaper/DiaperSheet";
 import { DayFeed } from "../components/day/DayFeed";
@@ -47,7 +46,6 @@ export function HomePage(): React.JSX.Element {
   return (
     <div className="flex flex-col gap-4">
       <SleepCard childId={childId} familyId={family.id} userId={userId} />
-      <ActiveBreastCard childId={childId} />
 
       <div className="grid grid-cols-2 gap-3">
         <Button

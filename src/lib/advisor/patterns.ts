@@ -76,7 +76,8 @@ export function feedStatsOnDay(events: AppEvent[], dayKey: string): FeedDayStat 
   let ml = 0;
   for (const e of liveEvents(events)) {
     if (dayKeyOf(e.startedAt) !== dayKey) continue;
-    if (e.type === "feed_breast" || e.type === "feed_solid") {
+    // Грудь убрана (D1): кормления считаем по бутылочке и прикорму, вода идёт только в мл.
+    if (e.type === "feed_solid") {
       count++;
     } else if (e.type === "feed_bottle") {
       count++;

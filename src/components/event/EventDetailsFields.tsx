@@ -9,7 +9,7 @@ interface EventDetailsFieldsProps {
   patch: (patch: Partial<DetailsState>) => void;
 }
 
-/** Поля деталей по типу события (сон/грудь/бутылочка/прикорм/вода/подгузник). */
+/** Поля деталей по типу события (сон/бутылочка/прикорм/вода/подгузник); грудь убрана (D1). */
 export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsProps): React.JSX.Element | null {
   switch (type) {
     case "sleep":
@@ -36,21 +36,6 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
           </div>
         </div>
       );
-    case "feed_breast":
-      return (
-        <>
-          <Label>Сторона</Label>
-          <Segmented
-            value={details.side}
-            onChange={(side) => patch({ side })}
-            options={[
-              { value: "left", label: "Лево" },
-              { value: "right", label: "Право" },
-              { value: "both", label: "Обе" },
-            ]}
-          />
-        </>
-      );
     case "feed_bottle":
       return (
         <div className="flex flex-col gap-3">
@@ -71,7 +56,7 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
               onChange={(kind) => patch({ kind })}
               options={[
                 { value: "formula", label: "Смесь" },
-                { value: "milk", label: "Сцеженное" },
+                { value: "water", label: "Вода" },
               ]}
             />
           </div>
@@ -87,6 +72,25 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
               value={details.food}
               onChange={(e) => patch({ food: e.target.value })}
               placeholder="Кабачок…"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="ev-amount">Сколько (необязательно)</Label>
+            <Input
+              id="ev-amount"
+              inputMode="numeric"
+              value={details.amount}
+              onChange={(e) => patch({ amount: e.target.value })}
+              placeholder="120"
+            />
+            <Segmented
+              className="mt-1"
+              value={details.unit}
+              onChange={(unit) => patch({ unit })}
+              options={[
+                { value: "g", label: "г" },
+                { value: "ml", label: "мл" },
+              ]}
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -114,9 +118,8 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
           value={details.diaperKind}
           onChange={(diaperKind) => patch({ diaperKind })}
           options={[
-            { value: "pee", label: "Попис" },
-            { value: "poop", label: "Кака" },
-            { value: "both", label: "И то и то" },
+            { value: "pee", label: "Пописал" },
+            { value: "poop", label: "Покакал" },
           ]}
         />
       );

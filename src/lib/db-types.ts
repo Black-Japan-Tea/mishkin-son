@@ -1,10 +1,8 @@
 import type {
   BottleDetails,
-  BreastDetails,
   DiaperDetails,
   DiaperKind,
-  BottleKind,
-  BreastSide,
+  SolidUnit,
   DayTag,
   EventType,
   SleepDetails,
@@ -136,9 +134,8 @@ function num(v: unknown): number | undefined {
 }
 
 const DAY_TAGS: readonly DayTag[] = ["day", "night"];
-const SIDES: readonly BreastSide[] = ["left", "right", "both"];
 const DIAPERS: readonly DiaperKind[] = ["pee", "poop", "both"];
-const BOTTLES: readonly BottleKind[] = ["milk", "formula"];
+const UNITS: readonly SolidUnit[] = ["g", "ml"];
 
 function oneOf<T extends string>(v: unknown, allowed: readonly T[]): T | undefined {
   return typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T) : undefined;
@@ -153,26 +150,23 @@ export function parseSleepDetails(v: unknown): SleepDetails {
   };
 }
 
-export function parseBreastDetails(v: unknown): BreastDetails {
-  const r = isRecord(v) ? v : {};
-  const d: BreastDetails = { side: oneOf(r.side, SIDES) ?? "both" };
-  const dur = num(r.durationMin);
-  if (dur !== undefined) d.durationMin = dur;
-  return d;
-}
-
 export function parseBottleDetails(v: unknown): BottleDetails {
   const r = isRecord(v) ? v : {};
-  const kind = oneOf(r.kind, BOTTLES);
-  return {
-    volumeMl: num(r.volumeMl) ?? 0,
-    ...(kind !== undefined ? { kind } : {}),
-  };
+  const d: BottleDetails = { volumeMl: num(r.volumeMl) ?? 0 };
+  // kind оставляем любой строкой: легаси "milk" и прочие неизвестные значения не должны ронять чтение (D2).
+  const kind = str(r.kind);
+  if (kind !== undefined) d.kind = kind;
+  return d;
 }
 
 export function parseSolidDetails(v: unknown): SolidDetails {
   const r = isRecord(v) ? v : {};
-  return { food: str(r.food), note: str(r.note) };
+  const d: SolidDetails = { food: str(r.food), note: str(r.note) };
+  const amount = num(r.amount);
+  if (amount !== undefined) d.amount = amount;
+  const unit = oneOf(r.unit, UNITS);
+  if (unit !== undefined) d.unit = unit;
+  return d;
 }
 
 export function parseWaterDetails(v: unknown): WaterDetails {
