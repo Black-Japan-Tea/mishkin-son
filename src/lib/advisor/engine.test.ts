@@ -82,11 +82,12 @@ describe("patterns", () => {
 describe("generateTips", () => {
   const now = new Date("2026-10-21T12:00:00Z");
 
-  it("даёт сводку и дисклеймер даже без событий", () => {
+  it("даёт сводку даже без событий и не генерирует дисклеймер", () => {
     const tips = generateTips(CHILD, [], now);
     expect(tips.some((t) => t.id === "today-summary")).toBe(true);
-    expect(tips.some((t) => t.id === "disclaimer")).toBe(true);
     expect(tips.some((t) => t.id === "window-unknown")).toBe(true);
+    // Дисклеймер — фиксированный баннер страницы, движок его больше не отдаёт
+    expect(tips.some((t) => t.id === "disclaimer")).toBe(false);
   });
 
   it("прогнозирует окно сна по медианному окну бодрствования", () => {

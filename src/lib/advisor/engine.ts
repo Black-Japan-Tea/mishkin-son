@@ -132,10 +132,6 @@ export function generateTips(child: Child, rawEvents: AppEvent[], now: Date = ne
     });
   }
 
-  tips.push({
-    id: "disclaimer",
-    icon: "info",
-    text: `Это наблюдения по данным трекера, а не медицинская рекомендация. При вопросах о здоровье — педиатр.`,
-  });
+  // Дисклеймер не генерируется движком: это фиксированный баннер страницы «Наблюдения» (решение №3)
   return tips;
 }
