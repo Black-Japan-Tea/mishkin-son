@@ -1,4 +1,4 @@
-# mishkin-son
+# Мишкин сон (mishkin-son)
 
 Суточный трекер сна и кормлений младенца. Мобильное PWA: офлайн-first (IndexedDB),
 облако и синк — Supabase. Полный план продукта — [PLAN.md](PLAN.md).

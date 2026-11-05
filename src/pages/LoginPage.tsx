@@ -26,7 +26,7 @@ export function LoginPage(): React.JSX.Element {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center p-4">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-extrabold">Мишкин сын</h1>
+        <h1 className="text-2xl font-extrabold">Мишкин сон</h1>
         <p className="text-sm text-muted-foreground">Суточный трекер малыша</p>
       </div>
       <Card className="ambient">

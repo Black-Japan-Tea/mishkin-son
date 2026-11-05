@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg"],
       manifest: {
-        name: "Мишкин сын — трекер малыша",
-        short_name: "Мишкин сын",
+        name: "Мишкин сон — трекер малыша",
+        short_name: "Мишкин сон",
         description: "Суточный трекер сна и кормлений младенца",
         lang: "ru",
         dir: "ltr",
