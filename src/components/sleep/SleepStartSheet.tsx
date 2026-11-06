@@ -16,7 +16,8 @@ interface SleepStartSheetProps {
   userId: string;
 }
 
-/** Старт сна: время + правка + тег день/ночь + условия (решения Q13–Q14). */
+/** Старт сна: время + правка + тег день/ночь + условия (решения Q13–Q14).
+    Liquid Glass: сегмент с синим тинтом, поля-стекло, градиентная кнопка сна. */
 export function SleepStartSheet({
   open,
   onOpenChange,
@@ -58,7 +59,7 @@ export function SleepStartSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <SheetContent title="Укладываем спать">
         {error !== null && (
-          <p className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
+          <p className="mb-3 rounded-[14px] bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
         )}
         <Segmented
           accent="sleep"
@@ -70,28 +71,26 @@ export function SleepStartSheet({
           ]}
         />
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="sl-date">Заснул</Label>
             <Input id="sl-date" type="date" value={dateKey} onChange={(e) => setDateKey(e.target.value)} />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="sl-time">во</Label>
             <Input id="sl-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
           </div>
         </div>
-        <div className="mt-3 flex flex-col gap-1">
+        <div className="mt-3 flex flex-col gap-1.5">
           <Label htmlFor="sl-place">Место (необязательно)</Label>
           <Input id="sl-place" value={place} onChange={(e) => setPlace(e.target.value)} placeholder="Кроватка, коляска, руки…" />
         </div>
-        <div className="mt-3 flex flex-col gap-1">
+        <div className="mt-3 flex flex-col gap-1.5">
           <Label htmlFor="sl-note">Заметка (необязательно)</Label>
           <Input id="sl-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Укачивали…" />
         </div>
-        <Button size="lg" className="mt-4 w-full bg-sleep text-white hover:opacity-90" onClick={() => void start()}>
-          <span className="flex items-center gap-2">
-            {dayTag === "night" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            Спать!
-          </span>
+        <Button size="lg" tone="sleep" className="mt-4 w-full" onClick={() => void start()}>
+          {dayTag === "night" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          Спать!
         </Button>
       </SheetContent>
     </Dialog>

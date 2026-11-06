@@ -89,7 +89,7 @@ export function EventForm({ childId, familyId, userId, initial, onSaved }: Event
   return (
     <div className="flex flex-col gap-3">
       {error !== null && (
-        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
+        <p className="rounded-[14px] bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
       )}
       <EventScheduleFields
         type={type}
@@ -102,7 +102,7 @@ export function EventForm({ childId, familyId, userId, initial, onSaved }: Event
         onEnd={setEnd}
       />
       <EventDetailsFields type={type} details={details} patch={patchDetails} />
-      <Button className="mt-1" onClick={() => void save()}>
+      <Button className="mt-1 w-full" onClick={() => void save()}>
         {initial === null ? "Добавить" : "Сохранить"}
       </Button>
     </div>

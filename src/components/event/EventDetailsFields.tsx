@@ -17,6 +17,7 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
         <div className="flex flex-col gap-3">
           <Label>День или ночь</Label>
           <Segmented
+            accent="sleep"
             value={details.dayTag}
             onChange={(dayTag) => patch({ dayTag })}
             options={[{ value: "day", label: "День" }, { value: "night", label: "Ночь" }]}
@@ -52,6 +53,7 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
           <div className="flex flex-col gap-1">
             <Label>Тип</Label>
             <Segmented
+              accent="food"
               value={details.kind}
               onChange={(kind) => patch({ kind })}
               options={[
@@ -115,6 +117,7 @@ export function EventDetailsFields({ type, details, patch }: EventDetailsFieldsP
     case "diaper":
       return (
         <Segmented
+          accent="neutral"
           value={details.diaperKind}
           onChange={(diaperKind) => patch({ diaperKind })}
           options={[
