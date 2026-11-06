@@ -113,9 +113,9 @@ export function SettingsPage(): React.JSX.Element {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {members.map((m) => (
-            <div key={m.userId} className="flex items-center justify-between rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-sm">
-              <span className="font-bold">{m.displayName}</span>
-              <span className="text-xs text-muted-foreground">{m.email ?? ""}</span>
+            <div key={m.userId} className="flex items-center justify-between gap-2 rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-sm">
+              <span className="min-w-0 truncate font-bold">{m.displayName}</span>
+              <span className="min-w-0 truncate text-xs text-muted-foreground">{m.email ?? ""}</span>
             </div>
           ))}
           {inviteCode !== null && (

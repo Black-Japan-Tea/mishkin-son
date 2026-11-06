@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 import { Input, Label } from "../components/ui/field";
 import { useFamily } from "../stores/family";
+import { useChildren } from "../stores/children";
+import { syncNow } from "../sync/engine";
 
 export function FamilyPage(): React.JSX.Element {
   const navigate = useNavigate();
@@ -19,7 +21,14 @@ export function FamilyPage(): React.JSX.Element {
     setBusy(true);
     setError(null);
     const action = mode === "create" ? create(name.trim()) : join(code);
-    action.then(() => navigate("/", { replace: true }))
+    // После create/join семья уже в сторе, но дети при входе были загружены
+    // с family=null → children=[] и loaded=true. refresh() читает только локальный
+    // IndexedDB, который у свежего вступившего пуст — без синка ChildGate уведёт
+    // на /children («Выбери малыша» + «Добавить малыша») вместо главной (баг №1).
+    action
+      .then(() => syncNow())
+      .then(() => useChildren.getState().refresh())
+      .then(() => navigate("/", { replace: true }))
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setBusy(false));
   };

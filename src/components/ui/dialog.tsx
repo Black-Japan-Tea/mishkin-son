@@ -17,8 +17,11 @@ const KEYFRAMES_ID = "mishkin-liquid-sheet-keyframes";
 const SHEET_KEYFRAMES = `
 @keyframes sheet-in{from{transform:translateY(calc(100% + 20px))}to{transform:none}}
 @keyframes sheet-out{from{transform:none}to{transform:translateY(calc(100% + 20px))}}
-@keyframes dialog-in{from{opacity:0;transform:translate(-50%,-48%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-@keyframes dialog-out{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-48.5%) scale(.97)}}
+/* Центральный диалог центрируется standalone-свойством translate (-50% -50% от
+   Tailwind-классов). В keyframes НИКАКИХ -50%: transform в анимации композируется
+   со свойством translate, и сдвиги сложились бы в -100% — диалог уезжал бы за экран. */
+@keyframes dialog-in{from{opacity:0;transform:translateY(2%) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes dialog-out{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(2.5%) scale(.97)}}
 @keyframes scrim-in{from{opacity:0}to{opacity:1}}
 @keyframes scrim-out{from{opacity:1}to{opacity:0}}
 `;
@@ -121,7 +124,7 @@ export function DialogContent({
       <Scrim />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 glass rounded-[28px] p-4 outline-none",
+          "fixed left-1/2 top-1/2 z-50 w-[calc(100dvw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 glass rounded-[28px] p-4 outline-none",
           // Диалог не выше вьюпорта (низкие экраны ~568px): контент скроллится внутри,
           // нижние кнопки («Сохранить»/«Удалить событие») всегда достижимы (фикс v0.2)
           "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",

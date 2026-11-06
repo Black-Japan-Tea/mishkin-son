@@ -148,6 +148,17 @@
   #root {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  /* Горизонтальный страж: clip (НЕ hidden — не создаёт scroll-контейнер, sticky/fixed
+     работают) запрещает вылезшему элементу расширять layout-viewport мобильного
+     браузера; иначе 100vw-центрированные fixed-диалоги уезжают за экран. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+  #root {
+    max-width: 100vw;
+    overflow-x: clip;
+  }
 }
 
 /* ===== Liquid Glass: стекло ===== */
