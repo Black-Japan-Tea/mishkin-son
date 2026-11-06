@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg"],
+      includeAssets: ["icon.svg", "icons/icon-192.png", "icons/icon-512.png"],
       manifest: {
         name: "Мишкин сон — трекер малыша",
         short_name: "Мишкин сон",
@@ -20,11 +20,13 @@ export default defineConfig({
         scope: "/",
         display: "standalone",
         orientation: "portrait",
-        background_color: "#FAF6F0",
-        theme_color: "#FAF6F0",
+        background_color: "#D8DCE1",
+        theme_color: "#D8DCE1",
         icons: [
-          { src: "/icon.svg", sizes: "192x192", type: "image/svg+xml", purpose: "any" },
-          { src: "/icon.svg", sizes: "512x512", type: "image/svg+xml", purpose: "maskable" },
+          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
         ],
       },
       workbox: {
@@ -34,7 +36,7 @@ export default defineConfig({
         // Навигации вместо этого идут network-first: свежая страница с сервера,
         // офлайн — последний закэшированный ответ из runtime-кэша.
         navigateFallback: undefined,
-        globPatterns: ["**/*.{js,css,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,svg,png,woff2}"],
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
