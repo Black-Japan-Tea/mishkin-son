@@ -13,6 +13,9 @@ import { refreshPendingCount, syncNow } from "../sync/engine";
 import { exportJson } from "../lib/export";
 import { clearLog, exportLog } from "../lib/logger";
 
+/** Стеклянная карточка Liquid Glass: радиус 24, hairline-штрих и блюр из .glass. */
+const GLASS_CARD = "glass rounded-3xl";
+
 const THEME_OPTIONS = [
   { value: "light", label: "Светлая" },
   { value: "dark", label: "Тёмная" },
@@ -50,9 +53,9 @@ export function SettingsPage(): React.JSX.Element {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Тема</CardTitle>
+          <CardTitle className="font-extrabold">Тема</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Segmented value={themeMode} onChange={(v) => void setThemeMode(v)} options={THEME_OPTIONS} />
@@ -81,19 +84,19 @@ export function SettingsPage(): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Семья{family !== null ? `: ${family.name}` : ""}</CardTitle>
+          <CardTitle className="font-extrabold">Семья{family !== null ? `: ${family.name}` : ""}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {members.map((m) => (
-            <div key={m.userId} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+            <div key={m.userId} className="flex items-center justify-between rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-sm">
               <span className="font-bold">{m.displayName}</span>
               <span className="text-xs text-muted-foreground">{m.email ?? ""}</span>
             </div>
           ))}
           {inviteCode !== null && (
-            <p className="rounded-lg bg-accent px-3 py-2 text-center font-mono text-lg font-extrabold tracking-widest">
+            <p className="rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-center font-mono text-lg font-extrabold tracking-widest">
               {inviteCode}
             </p>
           )}
@@ -104,9 +107,9 @@ export function SettingsPage(): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Синхронизация</CardTitle>
+          <CardTitle className="font-extrabold">Синхронизация</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
           <p className="text-muted-foreground">
@@ -134,9 +137,9 @@ export function SettingsPage(): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Данные</CardTitle>
+          <CardTitle className="font-extrabold">Данные</CardTitle>
         </CardHeader>
         <CardContent>
           <Button variant="outline" className="w-full" onClick={() => void exportJson()}>
@@ -145,9 +148,9 @@ export function SettingsPage(): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Журнал приложения</CardTitle>
+          <CardTitle className="font-extrabold">Журнал приложения</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
           <p className="text-muted-foreground">
@@ -166,9 +169,9 @@ export function SettingsPage(): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Аккаунт</CardTitle>
+          <CardTitle className="font-extrabold">Аккаунт</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
           <p className="text-muted-foreground">{email ?? ""}</p>

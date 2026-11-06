@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Moon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input, Label } from "../components/ui/field";
 import { useAuth } from "../stores/auth";
+
+/** Стеклянное поле Liquid Glass: полупрозрачный фон, штрих var(--stroke), синий фокус. */
+const GLASS_FIELD = "border-stroke bg-glass-strong focus-visible:border-sleep/50";
 
 export function LoginPage(): React.JSX.Element {
   const navigate = useNavigate();
@@ -25,28 +29,60 @@ export function LoginPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center p-4">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-extrabold">Мишкин сон</h1>
-        <p className="text-sm text-muted-foreground">Суточный трекер малыша</p>
+      {/* Логотип и название — над стеклянной карточкой, как в превью */}
+      <div className="mb-6 flex flex-col items-center gap-3 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-tint-sleep">
+          <Moon className="h-7 w-7 text-sleep" aria-hidden="true" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Мишкин сон</h1>
+          <p className="text-sm text-muted-foreground">Суточный трекер малыша</p>
+        </div>
       </div>
-      <Card className="ambient">
+      <Card className="glass rounded-4xl">
         <CardHeader>
-          <CardTitle>Вход</CardTitle>
+          <CardTitle className="font-extrabold">Вход</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-3" onSubmit={submit}>
             {error !== null && (
-              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
+              <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
             )}
             <div className="flex flex-col gap-1">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Label htmlFor="email" className="text-xs">
+                Email
+              </Label>
+              <Input
+                id="email"
+                className={GLASS_FIELD}
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="password">Пароль</Label>
-              <Input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Label htmlFor="password" className="text-xs">
+                Пароль
+              </Label>
+              <Input
+                id="password"
+                className={GLASS_FIELD}
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <Button type="submit" size="lg" disabled={busy}>
+            {/* Основное действие: изумруд-градиент «еда» + пружина нажатия */}
+            <Button
+              type="submit"
+              size="lg"
+              disabled={busy}
+              className="mt-1 bg-linear-to-b from-emerald-400 to-food text-white shadow-lg shadow-food/40 active:scale-95"
+            >
               {busy ? "Вхожу…" : "Войти"}
             </Button>
           </form>
