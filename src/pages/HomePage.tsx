@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
-import { Moon, Utensils } from "lucide-react";
-import { Card } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { ZzIcon, BottleIcon, BriefsIcon } from "../components/icons";
 import { SleepCard } from "../components/sleep/SleepCard";
 import { SleepStartSheet } from "../components/sleep/SleepStartSheet";
 import { FoodSheet } from "../components/feed/FoodSheet";
@@ -13,9 +11,37 @@ import { useFamily } from "../stores/family";
 import { useDayEvents } from "../hooks/queries";
 import { useNow } from "../hooks/useNow";
 import { dayKeyOf, formatDuration } from "../lib/time";
-import { sleepMsOnDay } from "../lib/advisor/patterns";
+import { feedStatsOnDay, liveEvents, sleepMsOnDay } from "../lib/advisor/patterns";
 
-/** Главный экран: кнопки + активный таймер + лента дня (план §7.1, Q53–Q55). */
+/** Метка-капс в карточках — 11px, разрядка wide, как .lbl в эталоне. */
+function Label({ children }: { children: React.ReactNode }): React.JSX.Element {
+  return (
+    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">{children}</p>
+  );
+}
+
+/** Кнопка быстрого действия: стеклянная плитка с цветной плашкой иконки (эталон .qa). */
+function ActionTile(props: {
+  label: string;
+  icon: React.JSX.Element;
+  plateClass: string;
+  onClick: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      className="glass flex flex-col items-center gap-2 rounded-3xl px-2.5 py-4 text-[13px] font-bold transition-transform duration-150 active:scale-95"
+    >
+      <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${props.plateClass}`}>
+        {props.icon}
+      </span>
+      {props.label}
+    </button>
+  );
+}
+
+/** Главный экран: карточка сна, действия, сводки и лента дня (эталон «ГЛАВНАЯ»). */
 export function HomePage(): React.JSX.Element {
   const userId = useAuth((s) => s.userId) ?? "";
   const { activeId } = useChildren();
@@ -30,59 +56,73 @@ export function HomePage(): React.JSX.Element {
   const [diaperOpen, setDiaperOpen] = useState(false);
 
   const summary = useMemo(() => {
-    const live = (events ?? []).filter((e) => e.deletedAt === null);
+    const live = liveEvents(events ?? []);
+    // Активный сон не входит в sleepMsOnDay (только завершённые) — добавляем живой таймер
     const activeSleep = live.find((e) => e.type === "sleep" && e.endedAt === null);
     const activeMs =
       activeSleep !== undefined ? now.getTime() - new Date(activeSleep.startedAt).getTime() : 0;
-    const sleepMs = sleepMsOnDay(live, todayKey) + activeMs;
-    const feeds = live.filter((e) => e.type.startsWith("feed_")).length;
-    return { sleepMs, feeds };
+    return {
+      sleepMs: sleepMsOnDay(live, todayKey) + activeMs,
+      feed: feedStatsOnDay(live, todayKey),
+    };
   }, [events, todayKey, now]);
+
+  const feedBreakdown = [
+    summary.feed.formulaMl > 0 ? `смесь ${summary.feed.formulaMl}` : null,
+    summary.feed.waterMl > 0 ? `вода ${summary.feed.waterMl}` : null,
+  ]
+    .filter((p) => p !== null)
+    .join(" · ");
 
   if (childId === "" || family === null) {
     return <p className="py-10 text-center text-sm text-muted-foreground">Загрузка…</p>;
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <SleepCard childId={childId} familyId={family.id} userId={userId} />
+    <div className="flex flex-col gap-3">
+      <SleepCard childId={childId} />
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          size="lg"
-          className="ambient ambient-sleep h-20 flex-col gap-1 bg-sleep text-white hover:opacity-90"
+      <div className="grid grid-cols-3 gap-2.5">
+        <ActionTile
+          label="Сон"
+          icon={<ZzIcon className="h-[22px] w-[22px]" />}
+          plateClass="bg-tint-sleep text-sleep"
           onClick={() => setSleepOpen(true)}
-        >
-          <Moon className="h-6 w-6" />
-          Сон
-        </Button>
-        <Button
-          size="lg"
-          className="ambient ambient-food h-20 flex-col gap-1 bg-food text-white hover:opacity-90"
+        />
+        <ActionTile
+          label="Еда"
+          icon={<BottleIcon className="h-[22px] w-[22px]" />}
+          plateClass="bg-tint-food text-food"
           onClick={() => setFoodOpen(true)}
-        >
-          <Utensils className="h-6 w-6" />
-          Еда
-        </Button>
+        />
+        <ActionTile
+          label="Подгузник"
+          icon={<BriefsIcon className="h-[22px] w-[22px]" />}
+          plateClass="bg-secondary text-muted-foreground"
+          onClick={() => setDiaperOpen(true)}
+        />
       </div>
-      <Button variant="outline" onClick={() => setDiaperOpen(true)}>
-        Подгузник
-      </Button>
 
-      <Card className="ambient flex items-center justify-around p-3 text-center text-sm">
-        <span>
-          <span className="block text-lg font-extrabold">{formatDuration(summary.sleepMs)}</span>
-          <span className="text-xs text-muted-foreground">сна сегодня</span>
-        </span>
-        <span>
-          <span className="block text-lg font-extrabold">{summary.feeds}</span>
-          <span className="text-xs text-muted-foreground">кормлений</span>
-        </span>
-      </Card>
-
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold">Сегодня</h2>
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="glass rounded-3xl px-4 py-3.5">
+          <Label>Сна сегодня</Label>
+          <p className="mt-0.5 text-xl font-extrabold tracking-[-0.01em]">
+            {formatDuration(summary.sleepMs)}
+          </p>
+          <p className="text-[11px] text-muted-foreground">из нормы 13–16 ч</p>
+        </div>
+        <div className="glass rounded-3xl px-4 py-3.5">
+          <Label>Кормлений</Label>
+          <p className="mt-0.5 text-xl font-extrabold tracking-[-0.01em]">
+            {summary.feed.count} · {summary.feed.ml} мл
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            {feedBreakdown === "" ? "—" : feedBreakdown}
+          </p>
+        </div>
       </div>
+
+      <h2 className="mt-1 px-0.5 text-base font-extrabold tracking-[-0.01em]">Сегодня</h2>
       <DayFeed events={events} />
 
       <SleepStartSheet open={sleepOpen} onOpenChange={setSleepOpen} childId={childId} familyId={family.id} userId={userId} />

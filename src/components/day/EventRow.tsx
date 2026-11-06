@@ -1,25 +1,40 @@
-import { Moon, Sun, Milk, Apple, Droplets, Baby } from "lucide-react";
+import { Moon, Sun, Droplets, Baby } from "lucide-react";
+import { BottleIcon, BriefsIcon, UtensilsIcon } from "../icons";
 import { formatClock, formatDuration } from "../../lib/time";
 import { cn } from "../../lib/utils";
 import type { AppEvent } from "../../lib/types";
 
-/** Заголовок и иконка события — единое место описания типов. */
+/** Иконка события по типу — единое место описания (фирменные начертания + lucide). */
 export function eventIcon(e: AppEvent): React.JSX.Element {
-  const cls = "h-4 w-4";
+  const cls = "h-[22px] w-[22px]";
   switch (e.type) {
     case "sleep":
-      return e.details.dayTag === "night" ? <Moon className={cn(cls, "text-sleep")} /> : <Sun className={cn(cls, "text-sleep")} />;
+      return e.details.dayTag === "night" ? <Moon className={cls} /> : <Sun className={cls} />;
     case "feed_bottle":
-      return <Milk className={cn(cls, "text-food")} />;
+      return <BottleIcon className={cls} />;
     case "feed_solid":
-      return <Apple className={cn(cls, "text-food")} />;
+      return <UtensilsIcon className={cls} />;
     case "feed_water":
-      return <Droplets className={cn(cls, "text-info")} />;
+      // Легаси-тип из старых БД: вода — капли, нейтральная плашка (кормлением не считается)
+      return <Droplets className={cls} />;
     case "diaper":
-      return <Baby className={cn(cls, "text-info")} />;
+      return <BriefsIcon className={cls} />;
     default:
       // Легаси-типы из старых локальных БД не должны ронять ленту (D2).
-      return <Baby className={cn(cls, "text-info")} />;
+      return <Baby className={cls} />;
+  }
+}
+
+/** Плашка под иконку: сон — синий тинт, еда — изумрудный, остальное — нейтральное стекло. */
+export function eventPlate(e: AppEvent): string {
+  switch (e.type) {
+    case "sleep":
+      return "bg-tint-sleep text-sleep";
+    case "feed_bottle":
+    case "feed_solid":
+      return "bg-tint-food text-food";
+    default:
+      return "bg-secondary text-muted-foreground";
   }
 }
 
@@ -87,6 +102,23 @@ export function eventSubtitle(e: AppEvent): string {
   return parts.join(" · ");
 }
 
+/**
+ * Подзаголовок строки ленты: время мгновенных событий уходит в правую колонку,
+ * поэтому в тексте остаются только примечания; без них — прочерк (как в превью).
+ * СобытиеSleep и правка задним числом показывают интервал целиком.
+ */
+function rowSubtitle(e: AppEvent): string {
+  if (e.type === "sleep" || (e.endedAt !== null && e.endedAt !== e.startedAt)) {
+    return eventSubtitle(e);
+  }
+  const parts: string[] = [];
+  if (e.type === "feed_solid" && e.details.note !== undefined && e.details.note !== "") {
+    parts.push(e.details.note);
+  }
+  if (e.parentEventId !== null) parts.push("внутри сна");
+  return parts.length > 0 ? parts.join(" · ") : "—";
+}
+
 interface EventRowProps {
   event: AppEvent;
   nested?: boolean;
@@ -100,11 +132,16 @@ export function EventRow({ event, nested = false, onClick }: EventRowProps): Rea
       type="button"
       onClick={() => onClick(event)}
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl border border-border bg-card/90 px-3 py-2.5 text-left transition-colors hover:bg-accent",
+        "glass flex w-full items-center gap-3 rounded-2xl px-3.5 py-[13px] text-left transition-transform duration-150 active:scale-[0.98]",
         nested && "ml-4 border-dashed",
       )}
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+      <span
+        className={cn(
+          "flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[13px]",
+          eventPlate(event),
+        )}
+      >
         {eventIcon(event)}
       </span>
       <span className="min-w-0 flex-1">
@@ -112,8 +149,11 @@ export function EventRow({ event, nested = false, onClick }: EventRowProps): Rea
           {eventTitle(event)}
           {active && <span className="ml-2 inline-block text-xs font-bold text-sleep">идёт</span>}
         </span>
-        <span className="block truncate text-xs text-muted-foreground">{eventSubtitle(event)}</span>
+        <span className="block truncate text-xs text-muted-foreground">{rowSubtitle(event)}</span>
       </span>
+      <time className="shrink-0 text-xs font-semibold tabular-nums text-faint">
+        {formatClock(event.startedAt)}
+      </time>
     </button>
   );
 }

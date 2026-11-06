@@ -75,7 +75,7 @@ describe("patterns", () => {
       // Вчерашняя бутылочка не попадает в счёт сегодняшнего дня.
       bottleFeed("f4", "2026-10-19T18:00:00Z", { volumeMl: 999, kind: "water" }),
     ];
-    expect(feedStatsOnDay(events, "2026-10-20")).toEqual({ count: 2, ml: 150 });
+    expect(feedStatsOnDay(events, "2026-10-20")).toEqual({ count: 2, ml: 150, formulaMl: 120, waterMl: 30 });
   });
 });
 

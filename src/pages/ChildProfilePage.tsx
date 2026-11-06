@@ -20,6 +20,23 @@ const TYPE_LABEL: Record<MeasurementType, string> = {
   head: "Голова, см",
 };
 
+/** Стеклянная карточка Liquid Glass: радиус 24, hairline-штрих и блюр из .glass. */
+const GLASS_CARD = "glass rounded-3xl";
+
+/** Стеклянное поле Liquid Glass: полупрозрачный фон, штрих var(--stroke), синий фокус. */
+const GLASS_FIELD = "border-stroke bg-glass-strong focus-visible:border-sleep/50";
+
+/** «2026-08-21» → «21.08.2026» — без date-fns: ключ дня уже приходит в ISO-формате. */
+function birthDdMmYyyy(iso: string): string {
+  return iso.split("-").reverse().join(".");
+}
+
+/** Подпись в шапке: «родился 21.08.2026 · мальчик»; без пола, если он ещё не выбран. */
+function birthLine(child: Child): string {
+  const sexLabel = child.sex === "male" ? "мальчик" : child.sex === "female" ? "девочка" : null;
+  return sexLabel === null ? `родился ${birthDdMmYyyy(child.birthDate)}` : `родился ${birthDdMmYyyy(child.birthDate)} · ${sexLabel}`;
+}
+
 /** Профиль ребёнка: данные, антропометрия (журнал + графики ВОЗ) — план §7.4. */
 export function ChildProfilePage(): React.JSX.Element {
   const { children, activeId } = useChildren();
@@ -34,9 +51,20 @@ export function ChildProfilePage(): React.JSX.Element {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="ambient">
+      {/* Шапка профиля: круглая ава в тоне сна + имя + дата рождения и пол */}
+      <Card className={`${GLASS_CARD} flex items-center gap-3.5 p-3.5`}>
+        <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-full bg-tint-sleep text-xl font-extrabold text-sleep select-none">
+          {child.name.slice(0, 1).toUpperCase()}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-base font-extrabold leading-tight">{child.name}</p>
+          <p className="text-xs text-muted-foreground">{birthLine(child)}</p>
+        </div>
+      </Card>
+
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Данные малыша</CardTitle>
+          <CardTitle className="font-extrabold">Данные малыша</CardTitle>
         </CardHeader>
         <CardContent>
           <ChildForm familyId={child.familyId} initial={child} onSaved={invalidate} />
@@ -45,9 +73,9 @@ export function ChildProfilePage(): React.JSX.Element {
 
       <MeasurementsSection childId={child.id} sex={child.sex} birthDate={child.birthDate} />
 
-      <Card className="ambient">
+      <Card className={GLASS_CARD}>
         <CardHeader>
-          <CardTitle>Кривые развития (ВОЗ)</CardTitle>
+          <CardTitle className="font-extrabold">Кривые развития (ВОЗ)</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Segmented
@@ -116,13 +144,13 @@ function MeasurementsSection({
   };
 
   return (
-    <Card className="ambient">
+    <Card className={GLASS_CARD}>
       <CardHeader>
-        <CardTitle>Измерения</CardTitle>
+        <CardTitle className="font-extrabold">Измерения</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {error !== null && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
+          <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">{error}</p>
         )}
         <Segmented
           value={type}
@@ -137,9 +165,12 @@ function MeasurementsSection({
             выдавливает поле значения до ширины в несколько пикселей */}
         <div className="flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-end">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <Label htmlFor="ms-value">{TYPE_LABEL[type]}</Label>
+            <Label htmlFor="ms-value" className="text-xs">
+              {TYPE_LABEL[type]}
+            </Label>
             <Input
               id="ms-value"
+              className={GLASS_FIELD}
               inputMode="decimal"
               value={value}
               onChange={(e) => setValue(e.target.value)}
@@ -147,10 +178,14 @@ function MeasurementsSection({
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
-            <Label htmlFor="ms-date">Дата</Label>
-            <Input id="ms-date" type="date" value={dateKey} onChange={(e) => setDateKey(e.target.value)} />
+            <Label htmlFor="ms-date" className="text-xs">
+              Дата
+            </Label>
+            <Input id="ms-date" className={GLASS_FIELD} type="date" value={dateKey} onChange={(e) => setDateKey(e.target.value)} />
           </div>
-          <Button onClick={add}>+</Button>
+          <Button className="active:scale-95" onClick={add}>
+            +
+          </Button>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -162,9 +197,9 @@ function MeasurementsSection({
               return (
                 <div
                   key={m.id}
-                  className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-sm"
                 >
-                  <span>
+                  <span className="min-w-0">
                     <span className="font-bold">
                       {TYPE_LABEL[m.type]}: {m.value}
                     </span>
@@ -175,7 +210,7 @@ function MeasurementsSection({
                   <button
                     type="button"
                     aria-label="Удалить измерение"
-                    className="text-muted-foreground hover:text-destructive"
+                    className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
                     onClick={() => void removeMeasurement(m.id).then(invalidate)}
                   >
                     ×

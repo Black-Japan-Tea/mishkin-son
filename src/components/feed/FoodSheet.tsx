@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAddEvent } from "../../hooks/queries";
+import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { Input, Label } from "../ui/field";
 import { Segmented } from "../ui/segmented";
@@ -19,7 +20,31 @@ interface FoodSheetProps {
   parentEventId?: string | null;
 }
 
-/** Кнопка «Еда»: bottom sheet с выбором типа (Q54). Грудь убрана (D1), вода — через бутылочку. */
+/** Шаг степпера объёма, мл — как «+10» на детских трекерах. */
+const ML_STEP = 10;
+
+const KIND_TILES: ReadonlyArray<{ value: BottleKind; label: string }> = [
+  { value: "formula", label: "Смесь" },
+  { value: "water", label: "Вода" },
+];
+
+const UNIT_TILES: ReadonlyArray<{ value: SolidUnit; label: string }> = [
+  { value: "g", label: "г" },
+  { value: "ml", label: "мл" },
+];
+
+/* Плитка выбора (как .types в превью): активная — тинт еды + изумрудный бордер. */
+function tileClass(active: boolean): string {
+  return cn(
+    "flex-1 whitespace-nowrap rounded-[14px] border px-3 py-2.5 text-[13px] font-bold transition-colors duration-200",
+    active
+      ? "border-food/40 bg-tint-food text-food"
+      : "border-stroke bg-transparent text-muted-foreground hover:text-foreground",
+  );
+}
+
+/** Кнопка «Еда»: bottom sheet с выбором типа (Q54). Грудь убрана (D1), вода — через бутылочку.
+    Liquid Glass: сегмент-переключатель, степпер объёма с −/+ и плитки типа — как в превью. */
 export function FoodSheet({
   open,
   onOpenChange,
@@ -73,11 +98,21 @@ export function FoodSheet({
     close();
   };
 
+  // Степпер: от пустого инпута считаем от нуля, в минус не уходим
+  const bumpMl = (delta: number): void => {
+    const parsed = Number.parseInt(ml, 10);
+    const base = Number.isNaN(parsed) ? 0 : parsed;
+    setMl(String(Math.max(0, base + delta)));
+  };
+
+  const stbtnClass =
+    "grid h-11 w-11 shrink-0 place-items-center rounded-[14px] glass-strong border border-stroke text-xl font-bold text-foreground transition-transform duration-150 active:scale-90";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <SheetContent title={night ? "Ночное кормление" : "Кормление"}>
         {error !== null && (
-          <p className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+          <p className="mb-3 rounded-[14px] bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
             {error}
           </p>
         )}
@@ -93,63 +128,101 @@ export function FoodSheet({
           />
         )}
 
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-col gap-3">
           {type === "bottle" && (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="ml">Объём, мл</Label>
-              <Input
-                id="ml"
-                inputMode="numeric"
-                value={ml}
-                onChange={(e) => setMl(e.target.value)}
-                placeholder="120"
-              />
-              <Label>Тип</Label>
-              <Segmented
-                value={kind}
-                onChange={setKind}
-                options={[
-                  { value: "formula", label: "Смесь" },
-                  { value: "water", label: "Вода" },
-                ]}
-              />
-              <Button className="mt-2" onClick={() => void instant()}>
-                Записать
-              </Button>
-            </div>
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="ml">Объём, мл</Label>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    aria-label="Меньше"
+                    onClick={() => bumpMl(-ML_STEP)}
+                    className={stbtnClass}
+                  >
+                    −
+                  </button>
+                  <Input
+                    id="ml"
+                    inputMode="numeric"
+                    value={ml}
+                    onChange={(e) => setMl(e.target.value)}
+                    placeholder="120"
+                    className="text-center tabular-nums"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Больше"
+                    onClick={() => bumpMl(ML_STEP)}
+                    className={stbtnClass}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Тип</Label>
+                <div className="flex gap-2">
+                  {KIND_TILES.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      aria-pressed={kind === t.value}
+                      onClick={() => setKind(t.value)}
+                      className={tileClass(kind === t.value)}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
           {type === "solid" && (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="food">Что ел</Label>
-              <Input
-                id="food"
-                value={food}
-                onChange={(e) => setFood(e.target.value)}
-                placeholder="Кабачок, каша…"
-              />
-              <Label htmlFor="amount">Сколько (необязательно)</Label>
-              <Input
-                id="amount"
-                inputMode="numeric"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="120"
-              />
-              <Segmented
-                value={unit}
-                onChange={setUnit}
-                options={[
-                  { value: "g", label: "г" },
-                  { value: "ml", label: "мл" },
-                ]}
-              />
-              <Button className="mt-2" onClick={() => void instant()}>
-                Записать
-              </Button>
-            </div>
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="food">Что ел</Label>
+                <Input
+                  id="food"
+                  value={food}
+                  onChange={(e) => setFood(e.target.value)}
+                  placeholder="Кабачок, каша…"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="amount">Сколько (необязательно)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="amount"
+                    inputMode="numeric"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="120"
+                    className="min-w-0 flex-1 tabular-nums"
+                  />
+                  <div className="flex min-w-0 flex-1 gap-2">
+                    {UNIT_TILES.map((t) => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        aria-pressed={unit === t.value}
+                        onClick={() => setUnit(t.value)}
+                        className={tileClass(unit === t.value)}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
+
+        <Button size="lg" className="mt-4 w-full" onClick={() => void instant()}>
+          Записать
+        </Button>
       </SheetContent>
     </Dialog>
   );

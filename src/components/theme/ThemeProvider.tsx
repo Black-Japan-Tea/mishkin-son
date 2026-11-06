@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }): Reac
         window.setTimeout(() => root.classList.remove("theme-anim"), 250);
       }
       const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta !== null) meta.setAttribute("content", dark ? "#17140F" : "#FAF6F0");
+      if (meta !== null) meta.setAttribute("content", dark ? "#0A0D12" : "#D8DCE1");
     };
 
     apply();

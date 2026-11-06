@@ -1,10 +1,20 @@
 import { cn } from "../../lib/utils";
 import type { HTMLAttributes } from "react";
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Liquid Glass по умолчанию; false возвращает прежний непрозрачный вид (радиус 12px). */
+  glass?: boolean;
+}
+
+export function Card({ className, glass = true, ...props }: CardProps) {
   return (
     <div
-      className={cn("rounded-xl border border-border bg-card/90 text-card-foreground", className)}
+      className={cn(
+        glass
+          ? "glass rounded-3xl text-card-foreground"
+          : "rounded-xl border border-border bg-card/90 text-card-foreground",
+        className,
+      )}
       {...props}
     />
   );

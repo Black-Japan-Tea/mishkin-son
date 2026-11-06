@@ -1,58 +1,87 @@
 @import "tailwindcss";
-@import "@fontsource-variable/nunito";
+@import "@fontsource-variable/inter";
 
 /* Тёмная тема включается классом на <html> (режимы: вручную/система/расписание) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================
+   Дизайн «Liquid Glass»: светлая тема — приглушённый серо-графит
+   с почти чёрным текстом; имена токенов сохранены, значения новые.
+   ============================================================ */
 :root {
-  --background: #faf6f0;
-  --foreground: #3b342e;
-  --card: #fffdf9;
-  --popover: #fffdf9;
-  --primary: #e8a87c; /* персик */
-  --primary-foreground: #43301f;
-  --secondary: #a9bca1; /* шалфей */
-  --secondary-foreground: #2e3828;
-  --muted: #f1eae0;
-  --muted-foreground: #8b8074;
-  --accent: #f4ede2;
-  --accent-foreground: #3b342e;
-  --destructive: #c96f5e;
-  --border: #e9e0d2;
-  --input: #e9e0d2;
-  --ring: #e8a87c;
-  --success: #7fa76b;
-  --warning: #e0a458;
-  --info: #9c8fc7;
-  --sleep: #7fa76b;
-  --food: #e0a458;
-  --ai: #9c8fc7;
-  --radius: 1rem;
+  --background: #D8DCE1;
+  --foreground: #0B0E12;
+  --card: rgba(255, 255, 255, 0.55);
+  --popover: #FFFFFF;
+  --primary: #10B981; /* изумруд — основные действия «Записать» */
+  --primary-foreground: #FFFFFF;
+  --secondary: rgba(255, 255, 255, 0.62);
+  --secondary-foreground: #0B0E12;
+  --muted: rgba(255, 255, 255, 0.46);
+  --muted-foreground: rgba(11, 14, 18, 0.62);
+  --accent: rgba(255, 255, 255, 0.62);
+  --accent-foreground: #0B0E12;
+  --destructive: #E11D48;
+  --border: rgba(255, 255, 255, 0.6);
+  --input: rgba(11, 14, 18, 0.08);
+  --ring: #1C90ED;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --info: #1C90ED;
+  --sleep: #1C90ED;
+  --food: #10B981;
+  --ai: #8B5CF6;
+  --radius: 1.5rem;
+  /* Liquid-слой: стекло, hairline-штрихи, цветные подсветки */
+  --faint: rgba(11, 14, 18, 0.4); /* «призрачный» текст: подписи осей, футер */
+  --glass: rgba(255, 255, 255, 0.46);
+  --glass-strong: rgba(255, 255, 255, 0.62);
+  --stroke: rgba(255, 255, 255, 0.6);
+  --stroke2: rgba(11, 14, 18, 0.08);
+  --tint-sleep: rgba(28, 144, 237, 0.14);
+  --tint-food: rgba(16, 185, 129, 0.16);
+  --glow1: rgba(28, 144, 237, 0.2);
+  --glow2: rgba(16, 185, 129, 0.16);
+  --scrim: rgba(20, 26, 34, 0.32);
+  --shadow-glass: 0 10px 36px rgba(15, 23, 42, 0.16);
+  --background-2: #C7CCD3; /* нижняя точка градиента фона */
 }
 
 .dark {
-  --background: #17140f;
-  --foreground: #ede6db;
-  --card: #201b15;
-  --popover: #262019;
-  --primary: #a78bfa; /* фиолетовый — навигация/акцент */
-  --primary-foreground: #17140f;
-  --secondary: #2c261e;
-  --secondary-foreground: #ede6db;
-  --muted: #241f18;
-  --muted-foreground: #a69a8c;
-  --accent: #2a241c;
-  --accent-foreground: #ede6db;
-  --destructive: #d97064;
-  --border: #2e2820;
-  --input: #2e2820;
-  --ring: #a78bfa;
-  --success: #6fbf8f;
-  --warning: #e89b5b;
-  --info: #a78bfa;
-  --sleep: #6fbf8f;
-  --food: #e89b5b;
-  --ai: #a78bfa;
+  --background: #0A0D12;
+  --foreground: #F3F6FA;
+  --card: rgba(255, 255, 255, 0.07);
+  --popover: #1A2028;
+  --primary: #10B981;
+  --primary-foreground: #FFFFFF;
+  --secondary: rgba(255, 255, 255, 0.12);
+  --secondary-foreground: #F3F6FA;
+  --muted: rgba(255, 255, 255, 0.07);
+  --muted-foreground: rgba(243, 246, 250, 0.62);
+  --accent: rgba(255, 255, 255, 0.12);
+  --accent-foreground: #F3F6FA;
+  --destructive: #F43F5E;
+  --border: rgba(255, 255, 255, 0.13);
+  --input: rgba(255, 255, 255, 0.13);
+  --ring: #1C90ED;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --info: #1C90ED;
+  --sleep: #1C90ED;
+  --food: #10B981;
+  --ai: #A78BFA;
+  --faint: rgba(243, 246, 250, 0.38);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-strong: rgba(255, 255, 255, 0.12);
+  --stroke: rgba(255, 255, 255, 0.13);
+  --stroke2: rgba(255, 255, 255, 0.07);
+  --tint-sleep: rgba(28, 144, 237, 0.18);
+  --tint-food: rgba(16, 185, 129, 0.18);
+  --glow1: rgba(28, 144, 237, 0.16);
+  --glow2: rgba(16, 185, 129, 0.12);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --shadow-glass: 0 10px 36px rgba(0, 0, 0, 0.55);
+  --background-2: #05070A;
 }
 
 @theme inline {
@@ -78,15 +107,42 @@
   --color-sleep: var(--sleep);
   --color-food: var(--food);
   --color-ai: var(--ai);
-  --font-sans: "Nunito Variable", ui-sans-serif, system-ui, sans-serif;
+  /* Liquid-токены для утилит и будущих экранов */
+  --color-faint: var(--faint);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-stroke: var(--stroke);
+  --color-stroke2: var(--stroke2);
+  --color-tint-sleep: var(--tint-sleep);
+  --color-tint-food: var(--tint-food);
+  --color-scrim: var(--scrim);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.5rem);
+  --radius-4xl: calc(var(--radius) + 0.5rem); /* 2rem — крупные листы стекла */
 }
 
 @layer base {
+  /* Liquid-фон: диагональный градиент; свечения «прибиты» к вьюпорту
+     через fixed-псевдослои, поэтому не скроллятся вместе с контентом (PWA). */
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-image: linear-gradient(160deg, var(--background), var(--background-2));
     overscroll-behavior-y: none;
+  }
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  body::before {
+    background: radial-gradient(640px 480px at -8% -6%, var(--glow1), transparent 70%);
+  }
+  body::after {
+    background: radial-gradient(680px 520px at 108% 106%, var(--glow2), transparent 70%);
   }
   /* safe-area для PWA на iOS */
   #root {
@@ -94,31 +150,61 @@
   }
 }
 
-/* Амбиентная подсветка (рецепт z.ai): полупрозрачная подложка + hairline + рассеянная тень.
-   Светлая тема — нейтральный оттенок тени; тёмная — семантический цвет роли элемента. */
+/* ===== Liquid Glass: стекло ===== */
+/* Полупрозрачная подложка + блюр + hairline-обводка + внутренний блик.
+   Радиус не задаём — компоненты сами rounded-lg/rounded-4xl. */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow-glass), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.dark .glass {
+  box-shadow: var(--shadow-glass), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Плотное стекло без обводки: чипы, пилюли, кнопки-иконки */
+.glass-strong {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.dark .glass-strong {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* ===== Амбиентная подсветка =====
+   Базовая — нейтральная тень; цветные варианты дают мягкое свечение роли
+   (статично и как переменные для «дыхания» .breathing ниже). */
 .ambient {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
 }
 .dark .ambient {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
 }
 
 .ambient-sleep {
-  --ambient-rest: 0 4px 16px rgba(0, 0, 0, 0.05);
-  --ambient-peak: 0 6px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--sleep) 35%, transparent);
+  --ambient-rest: 0 8px 20px color-mix(in srgb, var(--sleep) 30%, transparent);
+  --ambient-peak: 0 10px 28px color-mix(in srgb, var(--sleep) 45%, transparent);
 }
 .dark .ambient-sleep {
-  --ambient-rest: 0 4px 20px rgba(111, 191, 143, 0.12);
-  --ambient-peak: 0 6px 30px rgba(111, 191, 143, 0.22);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--sleep) 26%, transparent);
+  --ambient-rest: 0 8px 24px color-mix(in srgb, var(--sleep) 24%, transparent);
+  --ambient-peak: 0 12px 32px color-mix(in srgb, var(--sleep) 38%, transparent);
 }
 
 .ambient-food {
-  --ambient-rest: 0 4px 16px rgba(0, 0, 0, 0.05);
-  --ambient-peak: 0 6px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--food) 35%, transparent);
+  --ambient-rest: 0 8px 20px color-mix(in srgb, var(--food) 30%, transparent);
+  --ambient-peak: 0 10px 28px color-mix(in srgb, var(--food) 45%, transparent);
 }
 .dark .ambient-food {
-  --ambient-rest: 0 4px 20px rgba(232, 155, 91, 0.12);
-  --ambient-peak: 0 6px 30px rgba(232, 155, 91, 0.22);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--food) 26%, transparent);
+  --ambient-rest: 0 8px 24px color-mix(in srgb, var(--food) 24%, transparent);
+  --ambient-peak: 0 12px 32px color-mix(in srgb, var(--food) 38%, transparent);
 }
 
 /* «Дыхание» карточки сна: медленная пульсация ореола, ~6 с цикл */
