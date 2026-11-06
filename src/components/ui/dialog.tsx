@@ -3,11 +3,74 @@ import { X } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { ComponentPropsWithoutRef } from "react";
 
-export const Dialog = DialogPrimitive.Root;
-export const DialogTrigger = DialogPrimitive.Trigger;
-export const DialogClose = DialogPrimitive.Close;
+/* Кейфреймы Liquid-слоя: spring-выезд шита, pop центрального диалога, fade скрима.
+   ВАЖНО: объявляются один раз в <head> документа, ВНЕ Portal.
+   Radix оборачивает КАЖДОГО ребёнка DialogPortal в собственный Presence
+   (React.Children.map в react-dialog). <style> внутри Portal при закрытии
+   размонтируется первым (у него нет анимации → Presence unmount сразу),
+   @keyframes исчезают из документа в тот же кадр, когда Content получает
+   data-state="closed" → exit-анимация не стартует → animationend/animationcancel
+   не наступают → Presence навсегда висит в unmountSuspended, панель остаётся
+   в DOM с data-state="closed" и невидимыми кнопками перехватывает клики
+   (баг интеграционного смоука). Кейфреймы в <head> живут независимо от диалогов. */
+const KEYFRAMES_ID = "mishkin-liquid-sheet-keyframes";
+const SHEET_KEYFRAMES = `
+@keyframes sheet-in{from{transform:translateY(calc(100% + 20px))}to{transform:none}}
+@keyframes sheet-out{from{transform:none}to{transform:translateY(calc(100% + 20px))}}
+@keyframes dialog-in{from{opacity:0;transform:translate(-50%,-48%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes dialog-out{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-48.5%) scale(.97)}}
+@keyframes scrim-in{from{opacity:0}to{opacity:1}}
+@keyframes scrim-out{from{opacity:1}to{opacity:0}}
+`;
 
-/** Bottom sheet: мобильный паттерн из плана (§7.1, Q54). */
+function ensureSheetKeyframes(): void {
+  if (typeof document === "undefined") return; // клиент-only SPA, но страхуемся
+  if (document.getElementById(KEYFRAMES_ID) !== null) return; // идемпотентно при HMR
+  const style = document.createElement("style");
+  style.id = KEYFRAMES_ID;
+  style.textContent = SHEET_KEYFRAMES;
+  document.head.appendChild(style);
+}
+ensureSheetKeyframes();
+
+/* Закрытая панель/scrim не должны перехватывать указатель, даже пока Presence
+   держит их в DOM (пара кадров exit-анимации или любой будущий сбой размонтирования).
+   Только в closed: открытый диалог обязан принимать клики. */
+const CLOSED_POINTER = "data-[state=closed]:pointer-events-none";
+
+/** Scrim: цвет и блюр из токенов (--scrim), плавный fade. */
+function Scrim(): React.JSX.Element {
+  return (
+    <DialogPrimitive.Overlay
+      className={cn(
+        "fixed inset-0 z-50 bg-scrim backdrop-blur-[3px] outline-none",
+        CLOSED_POINTER,
+        "data-[state=open]:[animation:scrim-in_300ms_ease-out_both]",
+        "data-[state=closed]:[animation:scrim-out_300ms_ease-in_both]",
+        "motion-reduce:animate-none",
+      )}
+    />
+  );
+}
+
+/** Круглая стеклянная кнопка-крестик (как .icobtn в превью). */
+function CloseButton(): React.JSX.Element {
+  return (
+    <DialogPrimitive.Close
+      className={cn(
+        "grid h-8 w-8 shrink-0 place-items-center rounded-full glass-strong border border-stroke text-muted-foreground",
+        "transition-transform duration-150 active:scale-90 hover:text-foreground",
+      )}
+    >
+      <X className="h-4 w-4" />
+      <span className="sr-only">Закрыть</span>
+    </DialogPrimitive.Close>
+  );
+}
+
+/** Bottom sheet: мобильный паттерн из плана (§7.1, Q54).
+    Liquid Glass: панель «плавает» с отступом 10px от краёв, radius 32,
+    spring-появление снизу; шапка с хваталкой закреплена, контент скроллится внутри. */
 export function SheetContent({
   className,
   children,
@@ -16,29 +79,37 @@ export function SheetContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: string }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40" />
+      <Scrim />
       <DialogPrimitive.Content
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md rounded-t-2xl border-t border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg outline-none",
-          // Шит не выше вьюпорта: длинный контент скроллится внутри, а не уходит за верх экрана
-          "max-h-[100dvh] overflow-y-auto overscroll-contain",
+          "fixed bottom-[10px] left-[10px] right-[10px] z-50 mx-auto flex max-h-[calc(100dvh-1.25rem)] w-auto max-w-md flex-col glass rounded-[32px]",
+          // safe-area снизу: на iOS шит не прилипает к «ушке» домашнего экрана
+          "p-[18px] pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none",
+          CLOSED_POINTER,
+          "data-[state=open]:[animation:sheet-in_450ms_cubic-bezier(.32,1.35,.45,1)_both]",
+          "data-[state=closed]:[animation:sheet-out_300ms_ease-in_both]",
+          "motion-reduce:animate-none",
           className,
         )}
         {...props}
       >
-        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-muted-foreground/30" />
-        <DialogPrimitive.Title className="mb-3 text-base font-bold">{title}</DialogPrimitive.Title>
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground hover:bg-accent">
-          <X className="h-5 w-5" />
-          <span className="sr-only">Закрыть</span>
-        </DialogPrimitive.Close>
-        {children}
+        {/* Хваталка 40×4 */}
+        <div aria-hidden className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-stroke2" />
+        <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
+          <DialogPrimitive.Title className="text-[17px] font-extrabold leading-tight">
+            {title}
+          </DialogPrimitive.Title>
+          <CloseButton />
+        </div>
+        {/* Фикс v0.2: шит не выше вьюпорта — длинный контент скроллится внутри,
+            а не уходит за верх экрана; шапка при этом остаётся на месте */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
   );
 }
 
-/** Центральный диалог (подтверждения, формы редактирования). */
+/** Центральный диалог (подтверждения, формы редактирования) — та же стеклянная стилистика. */
 export function DialogContent({
   className,
   children,
@@ -47,24 +118,33 @@ export function DialogContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: string }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40" />
+      <Scrim />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-4 shadow-lg outline-none",
+          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 glass rounded-[28px] p-4 outline-none",
           // Диалог не выше вьюпорта (низкие экраны ~568px): контент скроллится внутри,
-          // нижние кнопки («Сохранить»/«Удалить событие») всегда достижимы
+          // нижние кнопки («Сохранить»/«Удалить событие») всегда достижимы (фикс v0.2)
           "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
+          CLOSED_POINTER,
+          "data-[state=open]:[animation:dialog-in_320ms_cubic-bezier(.32,1.35,.45,1)_both]",
+          "data-[state=closed]:[animation:dialog-out_240ms_ease-in_both]",
+          "motion-reduce:animate-none",
           className,
         )}
         {...props}
       >
-        <DialogPrimitive.Title className="mb-3 text-base font-bold">{title}</DialogPrimitive.Title>
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground hover:bg-accent">
-          <X className="h-5 w-5" />
-          <span className="sr-only">Закрыть</span>
-        </DialogPrimitive.Close>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <DialogPrimitive.Title className="text-[17px] font-extrabold leading-tight">
+            {title}
+          </DialogPrimitive.Title>
+          <CloseButton />
+        </div>
         {children}
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
   );
 }
+
+export const Dialog = DialogPrimitive.Root;
+export const DialogTrigger = DialogPrimitive.Trigger;
+export const DialogClose = DialogPrimitive.Close;
