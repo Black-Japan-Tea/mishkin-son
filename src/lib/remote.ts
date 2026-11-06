@@ -136,7 +136,12 @@ export async function rpcJoinFamily(code: string): Promise<Family> {
 export async function rpcCreateInvite(familyId: string): Promise<string> {
   const { data, error } = await requireSupabase().rpc("create_invite", { p_family_id: familyId });
   if (error !== null) throw new Error(`create_invite: ${error.message}`);
-  return data.code;
+  // create_invite объявлен как returns table (code text): PostgREST отдаёт МАССИВ строк,
+  // а не объект — data.code у массива всегда undefined (код «пропадал» из окошка).
+  const rows = (Array.isArray(data) ? data : [data]) as { code: string }[];
+  const code = rows[0]?.code;
+  if (code === undefined || code === "") throw new Error("create_invite: пустой код");
+  return code;
 }
 
 export type { DbFamilyRow, DbMemberRow };

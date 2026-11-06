@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
+import { Check, Copy, RefreshCw, Share2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input, Label } from "../components/ui/field";
@@ -43,12 +43,35 @@ export function SettingsPage(): React.JSX.Element {
   const sync = useSyncStatus();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const canShare = typeof navigator.share === "function";
 
   const generate = (): void => {
     setInviteError(null);
     invite()
       .then(setInviteCode)
       .catch((e: unknown) => setInviteError(e instanceof Error ? e.message : String(e)));
+  };
+
+  const copyCode = (): void => {
+    if (inviteCode === null) return;
+    navigator.clipboard
+      .writeText(inviteCode)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => setInviteError("Не удалось скопировать — выдели код и скопируй вручную"));
+  };
+
+  const shareCode = (): void => {
+    if (inviteCode === null) return;
+    void navigator
+      .share({
+        title: "Мишкин сон",
+        text: `Мой код для нашей семьи: ${inviteCode}. В приложении выбери «Семья → По коду».`,
+      })
+      .catch(() => {});
   };
 
   return (
@@ -96,9 +119,37 @@ export function SettingsPage(): React.JSX.Element {
             </div>
           ))}
           {inviteCode !== null && (
-            <p className="rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-center font-mono text-lg font-extrabold tracking-widest">
-              {inviteCode}
-            </p>
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-stroke bg-glass-strong px-3 py-4">
+              <span className="text-xs text-muted-foreground">Код действует 24 часа</span>
+              <p className="select-all font-mono text-4xl font-extrabold tracking-[0.35em]">
+                {inviteCode}
+              </p>
+              <div className="mt-1 flex w-full gap-2">
+                <Button className="flex-1" onClick={copyCode}>
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Скопировано
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Скопировать
+                    </>
+                  )}
+                </Button>
+                {canShare && (
+                  <Button variant="outline" className="flex-1" onClick={shareCode}>
+                    <Share2 className="h-4 w-4" />
+                    Поделиться
+                  </Button>
+                )}
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Отправь код близкому: он зарегистрируется в приложении, на экране «Семья»
+                выберет «По коду», введёт код — и увидит того же малыша.
+              </p>
+            </div>
           )}
           {inviteError !== null && <p className="text-sm text-destructive">{inviteError}</p>}
           <Button variant="outline" onClick={generate}>
