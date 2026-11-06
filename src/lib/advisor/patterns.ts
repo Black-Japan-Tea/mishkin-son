@@ -69,11 +69,17 @@ export function averageSleepMs(events: AppEvent[], dayKeys: string[]): number {
 export interface FeedDayStat {
   count: number;
   ml: number;
+  /** мл из бутылочек со смесью; легаси-kind ("milk" и т.п.) трактуем как смесь — как в feedsByDaySplit */
+  formulaMl: number;
+  /** мл воды: бутылочки kind="water" + легаси-события feed_water */
+  waterMl: number;
 }
 
 export function feedStatsOnDay(events: AppEvent[], dayKey: string): FeedDayStat {
   let count = 0;
   let ml = 0;
+  let formulaMl = 0;
+  let waterMl = 0;
   for (const e of liveEvents(events)) {
     if (dayKeyOf(e.startedAt) !== dayKey) continue;
     // Грудь убрана (D1): кормления считаем по бутылочке и прикорму, вода идёт только в мл.
@@ -82,9 +88,16 @@ export function feedStatsOnDay(events: AppEvent[], dayKey: string): FeedDayStat 
     } else if (e.type === "feed_bottle") {
       count++;
       ml += e.details.volumeMl;
+      // Вода — только явный kind="water"; легаси-строки ("milk" и т.п.) падают в смесь (семантика stats.ts)
+      if (e.details.kind === "water") {
+        waterMl += e.details.volumeMl;
+      } else {
+        formulaMl += e.details.volumeMl;
+      }
     } else if (e.type === "feed_water") {
       ml += e.details.volumeMl ?? 0;
+      waterMl += e.details.volumeMl ?? 0;
     }
   }
-  return { count, ml };
+  return { count, ml, formulaMl, waterMl };
 }

@@ -1,94 +1,58 @@
-import { useState } from "react";
-import { Moon, Sun, Timer } from "lucide-react";
 import { useNow } from "../../hooks/useNow";
-import { useActiveSleep, useEditEvent, useRemoveEvent } from "../../hooks/queries";
-import { formatClock, formatDuration } from "../../lib/time";
-import { cn } from "../../lib/utils";
+import { useActiveSleep, useEditEvent } from "../../hooks/queries";
+import { formatClock } from "../../lib/time";
 import { Button } from "../ui/button";
-import { Card } from "../ui/card";
-import { FoodSheet } from "../feed/FoodSheet";
 
 interface SleepCardProps {
   childId: string;
-  familyId: string;
-  userId: string;
 }
 
-/** Активный сон: таймер с нуля, тап → «Проснулся / Поел» (план §5.1, Q17–Q20). */
-export function SleepCard({ childId, familyId, userId }: SleepCardProps): React.JSX.Element | null {
+/** Таймер активного сна в формате «ЧЧ:ММ» — крупная цифра, как в эталоне (00:47). */
+function formatTimer(ms: number): string {
+  const totalMin = Math.max(0, Math.floor(ms / 60000));
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/** Активный сон: стеклянная карточка с таймером и кнопкой «Завершить» (эталон v1-liquid-glass). */
+export function SleepCard({ childId }: SleepCardProps): React.JSX.Element | null {
   const { data: sleep } = useActiveSleep(childId);
   const now = useNow(1000);
   const editEvent = useEditEvent();
-  const removeEvent = useRemoveEvent();
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [foodOpen, setFoodOpen] = useState(false);
 
   if (sleep === undefined || sleep === null) return null;
   const elapsedMs = now.getTime() - new Date(sleep.startedAt).getTime();
-  const cancellable = elapsedMs < 60_000;
 
-  const wake = (): void => {
-    void editEvent(sleep.id, { endedAt: new Date().toISOString() }).then(() => setPanelOpen(false));
+  const finish = (): void => {
+    void editEvent(sleep.id, { endedAt: new Date().toISOString() });
   };
 
   return (
-    <>
-      <Card
-        role="button"
-        tabIndex={0}
-        onClick={() => setPanelOpen((v) => !v)}
-        onKeyDown={(e) => e.key === "Enter" && setPanelOpen((v) => !v)}
-        className={cn("ambient ambient-sleep breathing cursor-pointer border-border bg-card/90 p-5")}
-      >
-        <div className="flex items-center justify-between text-sleep">
-          <span className="flex items-center gap-2 text-sm font-bold">
-            {sleep.details.dayTag === "night" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            {sleep.details.dayTag === "night" ? "Ночной сон" : "Дневной сон"}
-          </span>
-          <span className="text-xs text-muted-foreground">уснул в {formatClock(sleep.startedAt)}</span>
-        </div>
-        <div className="mt-2 flex items-baseline gap-3">
-          <Timer className="h-6 w-6 text-sleep" />
-          <span className="text-4xl font-extrabold tabular-nums">{formatDuration(elapsedMs)}</span>
-        </div>
-
-        {panelOpen && (
-          <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button variant="secondary" className="flex-1" onClick={wake}>
-              Проснулся
-            </Button>
-            <Button
-              className="ambient-food flex-1 bg-food text-white hover:opacity-90"
-              onClick={() => setFoodOpen(true)}
-            >
-              Поел
-            </Button>
-          </div>
-        )}
-
-        {cancellable && panelOpen && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2 w-full text-muted-foreground"
-            onClick={() => {
-              void removeEvent(sleep.id).then(() => setPanelOpen(false));
-            }}
-          >
-            Случайно? Отменить запись сна
-          </Button>
-        )}
-      </Card>
-
-      <FoodSheet
-        open={foodOpen}
-        onOpenChange={setFoodOpen}
-        childId={childId}
-        familyId={familyId}
-        userId={userId}
-        night
-        parentEventId={sleep.id}
+    <section className="glass relative overflow-hidden rounded-3xl p-5">
+      {/* Радиальное голубое пятно — чистый декор, клики не перехватывает */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-[30%] -top-[40%] h-60 w-60"
+        style={{ background: "radial-gradient(closest-side, var(--tint-sleep), transparent)" }}
       />
-    </>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">
+        {sleep.details.dayTag === "night" ? "Ночной сон" : "Дневной сон"}
+      </p>
+      <div className="mt-2.5 flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[52px] font-extrabold leading-none tracking-[-0.02em] tabular-nums">
+            {formatTimer(elapsedMs)}
+          </p>
+          <span className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-sleep">
+            <span aria-hidden="true" className="h-[7px] w-[7px] animate-pulse rounded-full bg-sleep" />
+            начался в {formatClock(sleep.startedAt)}
+          </span>
+        </div>
+        <Button tone="sleep" onClick={finish} className="shrink-0">
+          Завершить
+        </Button>
+      </div>
+    </section>
   );
 }
