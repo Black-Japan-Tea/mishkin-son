@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Liquid Glass: графитовый фон, стеклянная плитка, синий месяц (сон) + изумрудная точка (еда) -->
+  <!-- Liquid Glass: графитовый фон, стеклянная плитка, монограмма «МС» сном-синим -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#D8DCE1"/>
       <stop offset="1" stop-color="#C7CCD3"/>
     </linearGradient>
-    <linearGradient id="moon" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="mc" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#4AA3EF"/>
       <stop offset="1" stop-color="#1C90ED"/>
     </linearGradient>
@@ -28,13 +28,11 @@
   <!-- блик по верхнему краю плитки -->
   <path d="M196 122h120" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="6" stroke-linecap="round"/>
 
-  <!-- месяц (сон): тонкий серп — круг с большим вырезом через mask -->
-  <mask id="mcut">
-    <rect x="96" y="96" width="320" height="320" fill="#fff"/>
-    <circle cx="336" cy="178" r="80" fill="#000"/>
-  </mask>
-  <circle cx="247" cy="266" r="80" fill="url(#moon)" mask="url(#mcut)"/>
-  <!-- точка (еда) — в центре выреза -->
-  <circle cx="330" cy="182" r="20" fill="#10B981"/>
-  <circle cx="324" cy="176" r="6" fill="#FFFFFF" fill-opacity="0.55"/>
+  <!-- монограмма «МС»: контурные буквы (без шрифтов — лаунчеры рендерят пути) -->
+  <g fill="none" stroke="url(#mc)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <!-- М -->
+    <path d="M156 316V204l58 86 56-86v112"/>
+    <!-- С -->
+    <path d="M362 222a46 46 0 1 0 0 72"/>
+  </g>
 </svg>
