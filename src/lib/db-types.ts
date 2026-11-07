@@ -96,6 +96,12 @@ export interface Database {
         Update: Partial<DbMeasurementRow>;
         Relationships: [];
       };
+      profiles: {
+        Row: { id: string; display_name: string; email: string | null; created_at: string };
+        Insert: { id: string; display_name?: string; email?: string; created_at?: string };
+        Update: { display_name?: string; email?: string; created_at?: string };
+        Relationships: [];
+      };
       user_settings: {
         Row: DbSettingsRow;
         Insert: Partial<DbSettingsRow> & { user_id: string };
@@ -110,7 +116,7 @@ export interface Database {
       push_measurements: { Args: { p_rows: DbMeasurementRow[] }; Returns: null };
       create_family: { Args: { p_name: string }; Returns: DbFamilyRow };
       join_family: { Args: { p_code: string }; Returns: DbFamilyRow };
-      create_invite: { Args: { p_family_id: string }; Returns: { code: string } };
+      create_invite: { Args: { p_family_id: string }; Returns: { code: string }[] };
       my_family: { Args: Record<string, never>; Returns: DbFamilyRow };
       my_family_members: { Args: Record<string, never>; Returns: DbMemberRow[] };
     };

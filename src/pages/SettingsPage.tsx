@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Copy, RefreshCw, Share2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -37,14 +37,39 @@ function downloadLog(json: string): void {
 /** Настройки: тема, семья, синк, экспорт, аккаунт (план §7.5). */
 export function SettingsPage(): React.JSX.Element {
   const navigate = useNavigate();
-  const { email, signOut } = useAuth();
+  const { email, signOut, userId } = useAuth();
   const { themeMode, scheduleStart, scheduleEnd, setThemeMode, setSchedule } = useSettings();
-  const { family, members, invite } = useFamily();
+  const { family, members, invite, updateOwnName } = useFamily();
   const sync = useSyncStatus();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const canShare = typeof navigator.share === "function";
+  const [nameDraft, setNameDraft] = useState("");
+  const [nameSaved, setNameSaved] = useState(false);
+  const [nameBusy, setNameBusy] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  // Черновик имени следует за профилем (после сохранения members перечитается — значения совпадут)
+  useEffect(() => {
+    const me = members.find((m) => m.userId === userId);
+    if (me !== undefined) setNameDraft(me.displayName);
+  }, [members, userId]);
+
+  const saveName = async (): Promise<void> => {
+    if (userId === null) return;
+    setNameBusy(true);
+    setNameError(null);
+    try {
+      await updateOwnName(userId, nameDraft);
+      setNameSaved(true);
+      window.setTimeout(() => setNameSaved(false), 2000);
+    } catch (e) {
+      setNameError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setNameBusy(false);
+    }
+  };
 
   const generate = (): void => {
     setInviteError(null);
@@ -112,12 +137,42 @@ export function SettingsPage(): React.JSX.Element {
           <CardTitle className="font-extrabold">Семья{family !== null ? `: ${family.name}` : ""}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          {members.map((m) => (
-            <div key={m.userId} className="flex items-center justify-between gap-2 rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-sm">
-              <span className="min-w-0 truncate font-bold">{m.displayName}</span>
-              <span className="min-w-0 truncate text-xs text-muted-foreground">{m.email ?? ""}</span>
-            </div>
-          ))}
+          {members.map((m) =>
+            m.userId === userId ? (
+              <div key={m.userId} className="flex flex-col gap-1.5 rounded-xl border border-stroke bg-glass-strong px-3 py-2.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-bold">{m.displayName}</span>
+                  <span className="text-xs text-muted-foreground">{m.email ?? ""}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    aria-label="Твоё имя в семье"
+                    value={nameDraft}
+                    maxLength={40}
+                    onChange={(e) => {
+                      setNameDraft(e.target.value);
+                      setNameSaved(false);
+                    }}
+                    placeholder="Как тебя зовут?"
+                  />
+                  <Button
+                    className="shrink-0 whitespace-nowrap px-3 text-sm"
+                    disabled={nameBusy || nameDraft.trim() === "" || nameDraft === m.displayName}
+                    onClick={() => void saveName()}
+                  >
+                    {nameBusy ? "Секунду…" : nameSaved ? "Сохранено ✓" : "Сохранить"}
+                  </Button>
+                </div>
+                {nameError !== null && <p className="text-xs text-destructive">{nameError}</p>}
+                <p className="text-xs text-muted-foreground">Так тебя увидят другие участники семьи.</p>
+              </div>
+            ) : (
+              <div key={m.userId} className="flex items-center justify-between rounded-xl border border-stroke bg-glass-strong px-3 py-2 text-sm">
+                <span className="font-bold">{m.displayName}</span>
+                <span className="text-xs text-muted-foreground">{m.email ?? ""}</span>
+              </div>
+            ),
+          )}
           {inviteCode !== null && (
             <div className="flex flex-col items-center gap-2 rounded-2xl border border-stroke bg-glass-strong px-3 py-4">
               <span className="text-xs text-muted-foreground">Код действует 24 часа</span>

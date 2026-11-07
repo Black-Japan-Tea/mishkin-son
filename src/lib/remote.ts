@@ -144,4 +144,13 @@ export async function rpcCreateInvite(familyId: string): Promise<string> {
   return code;
 }
 
+/** Своё имя в семье: RLS «profiles update self» разрешает менять только свою строку. */
+export async function saveDisplayName(userId: string, name: string): Promise<void> {
+  const { error } = await requireSupabase()
+    .from("profiles")
+    .update({ display_name: name })
+    .eq("id", userId);
+  if (error !== null) throw new Error(`profiles update: ${error.message}`);
+}
+
 export type { DbFamilyRow, DbMemberRow };

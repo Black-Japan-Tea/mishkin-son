@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { getDb } from "../lib/db";
-import { pullFamily, pullMembers, rpcCreateFamily, rpcCreateInvite, rpcJoinFamily } from "../lib/remote";
+import { pullFamily, pullMembers, rpcCreateFamily, rpcCreateInvite, rpcJoinFamily, saveDisplayName } from "../lib/remote";
 import type { Family, FamilyMemberInfo } from "../lib/types";
 
 interface FamilyStore {
@@ -12,6 +12,8 @@ interface FamilyStore {
   create(name: string): Promise<Family>;
   join(code: string): Promise<Family>;
   invite(): Promise<string>;
+  /** Своё имя в списке участников: обновляет profiles и перечитывает участников. */
+  updateOwnName(userId: string, name: string): Promise<void>;
 }
 
 /** У пользователя ровно одна семья (v1): своя или приглашённая. */
@@ -60,5 +62,13 @@ export const useFamily = create<FamilyStore>()((set, get) => ({
     const { family } = get();
     if (family === null) throw new Error("Семья ещё не создана");
     return rpcCreateInvite(family.id);
+  },
+
+  updateOwnName: async (userId, name) => {
+    const trimmed = name.trim();
+    if (trimmed === "") throw new Error("Введи имя");
+    await saveDisplayName(userId, trimmed);
+    const members = await pullMembers();
+    set({ members });
   },
 }));
